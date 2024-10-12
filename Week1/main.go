@@ -3,11 +3,17 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 )
 
+var projectID string
+
 func main() {
+
+	projectID = os.Getenv("PROJECT_ID")
+
 	r := gin.Default()
 	r.LoadHTMLGlob("templates/*")
 	r.GET("/", startConversation)
@@ -30,7 +36,7 @@ func respondToUser(c *gin.Context) {
 	userMsg := c.Request.Form["userMsg"][0]
 	log.Println(userMsg)
 
-	botResponse, err := textPredict(userMsg, "erschmid-test-291318", "us-central1", "text-bison@001")
+	botResponse, err := textPredict(userMsg, projectID, "gemini-1.5-flash-001")
 	if err != nil {
 		log.Println(err)
 		botResponse = "Oops! I had troubles understanding that ..."

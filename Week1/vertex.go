@@ -5,78 +5,34 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 
-	aiplatform "cloud.google.com/go/aiplatform/apiv1beta1"
-	"cloud.google.com/go/aiplatform/apiv1beta1/aiplatformpb"
-	"google.golang.org/api/option"
-	"google.golang.org/protobuf/types/known/structpb"
+	"cloud.google.com/go/vertexai/genai"
 )
 
 // textPredict generates text with certain prompt and configurations.
-func textPredict(message, projectID, location, model string) (string, error) {
+func textPredict(message, projectID, model string) (string, error) {
 	ctx := context.Background()
+	location := "us-west1"
 
-	prompt := `The user wants to go on a trip somewhere. They have asked you this question:` + message
-	log.Println(prompt)
-
-	publisher := "google"
-	parameters := map[string]interface{}{
-		"temperature":     0.8,
-		"maxOutputTokens": 256,
-		"topP":            0.4,
-		"topK":            40,
-	}
-
-	apiEndpoint := fmt.Sprintf("%s-aiplatform.googleapis.com:443", location)
-
-	client, err := aiplatform.NewPredictionClient(ctx, option.WithEndpoint(apiEndpoint))
+	client, err := genai.NewClient(ctx, projectID, location)
 	if err != nil {
 		log.Println(err)
 		return "", err
 	}
 	defer client.Close()
 
-	base := fmt.Sprintf("projects/%s/locations/%s/publishers/%s/models", projectID, location, publisher)
-	url := fmt.Sprintf("%s/%s", base, model)
+	llm := client.GenerativeModel(model)
+	prompt := genai.Text(
+		`The user wants to go on a vacation somewhere. They want your opinion on what to do. Here is their question: ` + message,
+	)
 
-	// Instances: the prompt to use with the text model
-	promptValue, err := structpb.NewValue(map[string]interface{}{
-		"prompt": prompt,
-	})
+	resp, err := llm.GenerateContent(ctx, prompt)
 	if err != nil {
 		log.Println(err)
 		return "", err
 	}
 
-	// Parameters: the model configuration parameters
-	parametersValue, err := structpb.NewValue(parameters)
-	if err != nil {
-		log.Println(err)
-		return "", err
-	}
-
-	// PredictRequest: create the model prediction request
-	req := &aiplatformpb.PredictRequest{
-		Endpoint:   url,
-		Instances:  []*structpb.Value{promptValue},
-		Parameters: parametersValue,
-	}
-
-	// PredictResponse: receive the response from the model
-	resp, err := client.Predict(ctx, req)
-	if err != nil {
-		log.Println(err)
-		return "", err
-	}
-
-	response := resp.GetPredictions()[0].GetStringValue()
-
-	log.Println(response)
-
-	return response, nil
+	candidate := resp.Candidates[0].Content.Parts[0].(genai.Text)
+	return string(candidate), nil
 }
-
-// [END aiplatform_text_predictions]
-// [END generativeaionvertexai_text_predictions]
