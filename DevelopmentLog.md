@@ -46,3 +46,16 @@ the output is awful. I think we need to change the temperature, top-p, and top-k
 
 <<Unhappy>> Gemma2 responses are ... awful. Even with changing the top-p and temperature settings. It looks like the parameters setting
 is not required; I will remove it.
+
+Overall,  we need to do a better job demonstrating how to prompt models and decode their responses, especially if we're connecting
+directly to an Endpoint.
+
+I had to phutz around with regexes and string parsing to extract the answer from the model.
+
+## Building Go on Cloud Shell
+
+<<Unhappy>>Cloud Shell ran out of room with my successive Go builds. I had to clean the cache.
+
+```sh
+go clean -cache
+```

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"regexp"
+	"strings"
 
 	aiplatform "cloud.google.com/go/aiplatform/apiv1"
 	"cloud.google.com/go/aiplatform/apiv1/aiplatformpb"
@@ -13,15 +15,28 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
+func extractAnswer(response string) string {
+	// I am not a regex expert :/
+	re := regexp.MustCompile(`##RESPONSE##(?s)(.*)##ENDRESPONSE##`)
+	botAnswer := string(re.Find([]byte(response)))
+	botAnswer = strings.Replace(botAnswer, "##RESPONSE##", "", 1)
+	botAnswer = strings.Replace(botAnswer, "##ENDRESPONSE##", "", 1)
+	return botAnswer
+}
+
 func createPrompt(message string) string {
 	return `
 You are a helpful travel agent. The user wants to have a conversation with you about where to go.
 You are going to help them plan their trip.
 
+Be sure to label your response with ##RESPONSE## and end your response with ##ENDRESPONSE##.
+
+Do not include system instructions in the response.
+
 Example:
 [USER]: I want to go to Italy.
-[RESPONSE]: Italy is a fantastic place to go! What would you like to experience: the food, the
-history, the art, the people, or some combination?
+##RESPONSE## Italy is a fantastic place to go! What would you like to experience: the food, the
+history, the art, the people, or some combination?##ENDRESPONSE##
 
 Here is the user query. Respond to the user's request. Check your answer before responding.
 
@@ -42,12 +57,7 @@ func textPredictGemma(message, projectID string) (string, error) {
 	}
 	defer client.Close()
 
-	parameters := map[string]interface{}{
-		"temperature":     0.5,
-		"maxOutputTokens": 1024,
-		"topP":            0.2,
-		"topK":            10,
-	}
+	parameters := map[string]interface{}{}
 
 	promptValue, err := structpb.NewValue(map[string]interface{}{
 		"inputs":     createPrompt(message),
@@ -68,9 +78,10 @@ func textPredictGemma(message, projectID string) (string, error) {
 	}
 
 	prediction := resp.GetPredictions()
+	log.Println(prediction)
 	value := prediction[0].GetStringValue()
 
-	return value, nil
+	return extractAnswer(value), nil
 }
 
 // textPredictGemini generates text using a Gemini 1.5 Flash model
