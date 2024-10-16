@@ -11,7 +11,7 @@ Mediocre:
 
 + https://chenyitian.gitbooks.io/gin-tutorials/content/gin/8.html
 
-Bad:
+<<Unhappy>> Bad:
 
 + https://stackoverflow.com/questions/66658503/how-to-render-html-template-in-gin-gonic-golang
 + https://gin-gonic.com/docs/examples/html-rendering/#custom-template-renderer
@@ -29,4 +29,15 @@ Data tier: Firestore
 
 ## Firestore
 
-Updating array fields in Firestore is hard. Too hard. Go doesn't support the `arrayUnion` operation in Firestore :/
+<<Unhappy>> Updating array fields in Firestore is hard. Too hard. Go doesn't support the `arrayUnion` operation in Firestore :/
+
+Switched to SubCollection of document
+
+## Deploying Gemma model from Model Garden
+
+<<Unhappy>> Try 1: tried deployment from Pantheon. I don't think it worked ... :/
+
+The activity bar in Pantheon says that something is happening, but that's the only indication I have that a Gemma model is being deployed.
+
+I'm going to use Gemini 1.5 Flash to continue prototyping.
+

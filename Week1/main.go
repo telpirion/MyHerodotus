@@ -51,7 +51,7 @@ func respondToUser(c *gin.Context) {
 		Created:     time.Now(),
 	}
 
-	// Store the conversation in a separate thread
+	// Use a separate thread to store the conversation
 	go func() {
 		err := saveConversation(*convo, TestEmail, projectID)
 		if err != nil {
