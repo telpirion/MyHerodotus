@@ -11,6 +11,9 @@ hosted on [Google Cloud][gcp]--in effect, your very own Herodotus.
 
 ## Architecture
 
+This project uses a [three-tier architecture][three-tier], with a simple web
+frontend, an application tier, and a data tier.
+
 This project uses the following Google services:
 
 + [Vertex AI][vertex]
@@ -29,4 +32,5 @@ This project also uses the following libraries:
 [gin]: https://github.com/gin-gonic/gin
 [herodotus]: https://en.wikipedia.org/wiki/Herodotus
 [run]: https://cloud.google.com/run/docs/overview/what-is-cloud-run
+[three-tier]: https://www.ibm.com/topics/three-tier-architecture
 [vertex]: https://cloud.google.com/vertex-ai/docs
