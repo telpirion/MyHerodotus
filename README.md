@@ -1,43 +1,32 @@
-# Friction Log
+# My Herodotus
 
-## Learning how to create a templated web server with Go
+[Herodotus][herodotus], often considered the "Father of Historians," was also a prolific
+travel journelist. His _Histories_ act as one of the very first travel guides of the
+Ancient Mediterranean.
 
-Good:
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Marble_bust_of_Herodotos_MET_DT11742_%28cropped%29.jpg/220px-Marble_bust_of_Herodotos_MET_DT11742_%28cropped%29.jpg)
 
-+ https://go.dev/play/p/f4HPQ_WKv9
-+ https://stackoverflow.com/questions/19546896/golang-template-how-to-render-templates
-
-Mediocre:
-
-+ https://chenyitian.gitbooks.io/gin-tutorials/content/gin/8.html
-
-<<Unhappy>> Bad:
-
-+ https://stackoverflow.com/questions/66658503/how-to-render-html-template-in-gin-gonic-golang
-+ https://gin-gonic.com/docs/examples/html-rendering/#custom-template-renderer
-
-## Learning how to style the web app
-
-https://fonts.google.com/icons
-https://bulma.io/documentation/elements/button/
+This project demonstrates how to create your own travel guide using generative AI
+hosted on [Google Cloud][gcp]--in effect, your very own Herodotus.
 
 ## Architecture
 
-Presentation tier: Bulma, plain-old JS, (TODO) Firebase sign-in
-Application tier: Go, Gin templates, Vertex AI model
-Data tier: Firestore
+This project uses the following Google services:
 
-## Firestore
++ [Vertex AI][vertex]
++ [Firestore][firestore]
++ [Cloud Run][run]
++ [Firebase authentication][firebase]
 
-<<Unhappy>> Updating array fields in Firestore is hard. Too hard. Go doesn't support the `arrayUnion` operation in Firestore :/
+This project also uses the following libraries:
 
-Switched to SubCollection of document
++ [Bulma][bulma]
++ [Gin][gin]
 
-## Deploying Gemma model from Model Garden
-
-<<Unhappy>> Try 1: tried deployment from Pantheon. I don't think it worked ... :/
-
-The activity bar in Pantheon says that something is happening, but that's the only indication I have that a Gemma model is being deployed.
-
-I'm going to use Gemini 1.5 Flash to continue prototyping.
-
+[bulma]: https://bulma.io/documentation/components/message/
+[firebase]: https://firebase.google.com/docs/auth/web/password-auth
+[firestore]: https://cloud.google.com/firestore/docs/samples/firestore-data-query#firestore_data_query-go
+[gin]: https://github.com/gin-gonic/gin
+[herodotus]: https://en.wikipedia.org/wiki/Herodotus
+[run]: https://cloud.google.com/run/docs/overview/what-is-cloud-run
+[vertex]: https://cloud.google.com/vertex-ai/docs
