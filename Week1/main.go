@@ -4,11 +4,14 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
 var projectID string
+
+const TestEmail string = "testemail@example.com"
 
 func main() {
 
@@ -41,6 +44,20 @@ func respondToUser(c *gin.Context) {
 		log.Println(err)
 		botResponse = "Oops! I had troubles understanding that ..."
 	}
+
+	convo := &ConversationBit{
+		UserQuery:   userMsg,
+		BotResponse: botResponse,
+		Created:     time.Now(),
+	}
+
+	// Store the conversation in a separate thread
+	go func() {
+		err := saveConversation(*convo, TestEmail, projectID)
+		if err != nil {
+			log.Println(err)
+		}
+	}()
 
 	c.HTML(http.StatusOK, "index.html", gin.H{
 		"Message": struct {

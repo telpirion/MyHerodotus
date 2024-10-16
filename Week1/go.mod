@@ -11,6 +11,7 @@ require (
 )
 
 require (
+	cloud.google.com/go/firestore v1.17.0 // indirect
 	cloud.google.com/go/longrunning v0.6.0 // indirect
 	cloud.google.com/go/vertexai v0.13.1 // indirect
 )

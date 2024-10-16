@@ -1,8 +1,5 @@
 package main
 
-// [START aiplatform_text_predictions]
-// [START generativeaionvertexai_text_predictions]
-
 import (
 	"context"
 	"log"

@@ -15,7 +15,7 @@ func listBlobs() {
 	ctx := context.Background()
 	storageClient, err := storage.NewClient(ctx)
 	if err != nil {
-		fmt.Printf("Failed to create client: %w", err)
+		fmt.Printf("Failed to create client: %v", err)
 		return
 	}
 
