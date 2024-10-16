@@ -1,5 +1,7 @@
 # My Herodotus
 
+![Go build](https://github.com/telpirion/MyHerodotus/actions/workflows/go.yml/badge.svg)
+
 [Herodotus][herodotus], often considered the "Father of Historians," was also a prolific
 travel journelist. His _Histories_ act as one of the very first travel guides of the
 Ancient Mediterranean.
