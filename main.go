@@ -19,12 +19,20 @@ func main() {
 
 	r := gin.Default()
 	r.LoadHTMLGlob("templates/*")
-	r.GET("/", startConversation)
-	r.POST("/", respondToUser)
+	r.GET("/home", startConversation)
+	r.POST("/home", respondToUser)
+	r.GET("/", login)
 	log.Fatal(r.Run(":8080"))
 }
 
+func login(c *gin.Context) {
+	c.HTML(http.StatusOK, "login.html", gin.H{})
+}
+
 func startConversation(c *gin.Context) {
+	params := c.Params
+	log.Println(params)
+
 	c.HTML(http.StatusOK, "index.html", gin.H{
 		"Message": struct {
 			Message string
