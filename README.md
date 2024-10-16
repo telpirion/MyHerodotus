@@ -1,5 +1,7 @@
 # My Herodotus
 
+[![Build Status](https://github.com/telpirion/MyHerodotus/workflows/build/badge.svg?branch=main)](https://github.com/telpirion/MyHerodotus/actions?query=branch%3Amain)
+
 [Herodotus][herodotus], often considered the "Father of Historians," was also a prolific
 travel journelist. His _Histories_ act as one of the very first travel guides of the
 Ancient Mediterranean.
