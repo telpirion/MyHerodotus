@@ -39,7 +39,7 @@ func respondToUser(c *gin.Context) {
 	userMsg := c.Request.Form["userMsg"][0]
 	log.Println(userMsg)
 
-	botResponse, err := textPredict(userMsg, projectID, "gemini-1.5-flash-001")
+	botResponse, err := textPredictGemma(userMsg, projectID)
 	if err != nil {
 		log.Println(err)
 		botResponse = "Oops! I had troubles understanding that ..."

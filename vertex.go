@@ -13,14 +13,23 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
-func createPrompt(message string) genai.Text {
-	return genai.Text(
-		`The user wants to go on a vacation somewhere. They want your opinion on what to do. Here is their question: ` + message,
-	)
+func createPrompt(message string) string {
+	return `
+You are a helpful travel agent. The user wants to have a conversation with you about where to go.
+You are going to help them plan their trip.
+
+Example:
+[USER]: I want to go to Italy.
+[RESPONSE]: Italy is a fantastic place to go! What would you like to experience: the food, the
+history, the art, the people, or some combination?
+
+Here is the user query. Respond to the user's request. Check your answer before responding.
+
+[USER]:` + message
 }
 
 // textPredictGemma2 generates text using a Gemma2 hosted model
-func textPredictGemma(message, projectID, model string) (string, error) {
+func textPredictGemma(message, projectID string) (string, error) {
 	ctx := context.Background()
 	location := "us-west1"
 	endpointID := os.Getenv("ENDPOINT_ID")
@@ -36,8 +45,8 @@ func textPredictGemma(message, projectID, model string) (string, error) {
 	parameters := map[string]interface{}{
 		"temperature":     0.5,
 		"maxOutputTokens": 1024,
-		"topP":            1.0,
-		"topK":            1,
+		"topP":            0.2,
+		"topK":            10,
 	}
 
 	promptValue, err := structpb.NewValue(map[string]interface{}{
@@ -65,9 +74,10 @@ func textPredictGemma(message, projectID, model string) (string, error) {
 }
 
 // textPredictGemini generates text using a Gemini 1.5 Flash model
-func textPredictGemini(message, projectID, model string) (string, error) {
+func textPredictGemini(message, projectID string) (string, error) {
 	ctx := context.Background()
 	location := "us-west1"
+	model := "gemini-1.5-flash-001"
 
 	client, err := genai.NewClient(ctx, projectID, location)
 	if err != nil {
@@ -79,7 +89,7 @@ func textPredictGemini(message, projectID, model string) (string, error) {
 	llm := client.GenerativeModel(model)
 	prompt := createPrompt(message)
 
-	resp, err := llm.GenerateContent(ctx, prompt)
+	resp, err := llm.GenerateContent(ctx, genai.Text(prompt))
 	if err != nil {
 		log.Println(err)
 		return "", err

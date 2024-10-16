@@ -41,3 +41,8 @@ The activity bar in Pantheon says that something is happening, but that's the on
 
 I'm going to use Gemini 1.5 Flash to continue prototyping.
 
+<<Anxious>> I used the [official Gemma2 prediction sample](https://github.com/GoogleCloudPlatform/golang-samples/pull/4395/files) but
+the output is awful. I think we need to change the temperature, top-p, and top-k settings.
+
+<<Unhappy>> Gemma2 responses are ... awful. Even with changing the top-p and temperature settings. It looks like the parameters setting
+is not required; I will remove it.
