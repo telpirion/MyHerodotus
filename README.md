@@ -29,6 +29,7 @@ This project also uses the following libraries:
 [bulma]: https://bulma.io/documentation/components/message/
 [firebase]: https://firebase.google.com/docs/auth/web/password-auth
 [firestore]: https://cloud.google.com/firestore/docs/samples/firestore-data-query#firestore_data_query-go
+[gcp]: https://cloud.google.com
 [gin]: https://github.com/gin-gonic/gin
 [herodotus]: https://en.wikipedia.org/wiki/Herodotus
 [run]: https://cloud.google.com/run/docs/overview/what-is-cloud-run
