@@ -34,6 +34,9 @@ import (
 	"time"
 
 	"cloud.google.com/go/firestore"
+	"google.golang.org/api/iterator"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 const (
@@ -66,4 +69,42 @@ func saveConversation(convo ConversationBit, userEmail, projectID string) error 
 	_, _, err = conversations.Add(ctx, convo)
 
 	return err
+}
+
+func getConversation(userEmail, projectID string) ([]ConversationBit, error) {
+	ctx := context.Background()
+	conversations := []ConversationBit{}
+	client, err := firestore.NewClientWithDatabase(ctx, projectID, DBName)
+	if err != nil {
+		return conversations, err
+	}
+	defer client.Close()
+
+	// Check whether this user exists in the database or not
+	docRef := client.Collection(CollectionName).Doc(userEmail)
+	_, err = docRef.Get(ctx)
+	if status.Code(err) == codes.NotFound {
+		return conversations, nil
+	}
+	if err != nil {
+		return conversations, err
+	}
+
+	iter := docRef.Collection(SubCollectionName).Documents(ctx)
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return conversations, err
+		}
+		var convo ConversationBit
+		err = doc.DataTo(&convo)
+		if err != nil {
+			continue
+		}
+		conversations = append(conversations, convo)
+	}
+	return conversations, nil
 }
