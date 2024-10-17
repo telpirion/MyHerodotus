@@ -9,9 +9,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var projectID string
-
-const TestEmail string = "testemail@example.com"
+var (
+	projectID string
+	userEmail string = "anonymous@example.com"
+)
 
 func main() {
 
@@ -19,6 +20,7 @@ func main() {
 
 	r := gin.Default()
 	r.LoadHTMLGlob("templates/*")
+	r.Static("/js", "./js")
 	r.GET("/home", startConversation)
 	r.POST("/home", respondToUser)
 	r.GET("/", login)
@@ -61,7 +63,7 @@ func respondToUser(c *gin.Context) {
 
 	// Use a separate thread to store the conversation
 	go func() {
-		err := saveConversation(*convo, TestEmail, projectID)
+		err := saveConversation(*convo, userEmail, projectID)
 		if err != nil {
 			log.Println(err)
 		}
