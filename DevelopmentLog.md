@@ -10,9 +10,9 @@ For this week's activities, we need to accomplish the following:
 
   _I built this with Go, Gin, Bulma (FE)._
 
-- []  Deploy the sample chat app.
+- [x]  Deploy the sample chat app.
 
-  _In progress_
+  _The app has been deployed [here](https://myherodotus-1025771077852.us-west1.run.app/)._
 
 - []  Instrument the application to log to Cloud Observability.
 
@@ -23,7 +23,14 @@ For this week's activities, we need to accomplish the following:
 - []  Identify data that needs to be persisted to make response history useful.
 
   _I have integrated Firebase auth into the app. This asks users to sign in so that their interactions are
-  stored 
+  stored keyed into the user's email. I may want to separately store query & responses from the models to
+  track their accuracy._
+
+## Tracking future upgrades to app
+
+- [] Provide feedback mechanism for users to rate responses.
+- [] Track user feedback across sessions and users.
+- [] Tag user feedback with model type, endpoint ID, prompt
 
 ## Learning how to create a templated web server with Go
 
@@ -67,6 +74,9 @@ the output is awful. I think we need to change the temperature, top-p, and top-k
 
 <<Unhappy>> Gemma2 responses are ... awful. Even with changing the top-p and temperature settings. It looks like the parameters setting
 is not required; I will remove it.
+
+Even with removing the temperature settings, the responses are garbage. If I were releasing this publicly, I would rely
+on a more accurate model like Gemini. The Gemma2 model may require better tuning for good results.
 
 Overall,  we need to do a better job demonstrating how to prompt models and decode their responses, especially if we're connecting
 directly to an Endpoint.
@@ -140,9 +150,22 @@ docker ps -a
 docker kill [CONTAINER_NAME]
 ```
 
+To create the Docker repository in Artifact Registry:
+
+```sh
+gcloud artifacts repositories create my-herodotus --repository-format=docker \
+    --location=us-west1 --description="Docker repository" \
+    --project=${PROJECT_ID}
+```
+
 To upload the Docker image to Artifact Registry:
 
+```sh
+docker tag myherodotus \
+us-west1-docker.pkg.dev/${PROJECT_ID}/my-herodotus/base-image:v1
 
+docker push us-west1-docker.pkg.dev/${PROJECT_ID}/my-herodotus/base-image:v1
+```
 
 
 Sources:

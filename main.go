@@ -21,6 +21,8 @@ func main() {
 	r := gin.Default()
 	r.LoadHTMLGlob("templates/*")
 	r.Static("/js", "./js")
+	r.StaticFile("/favicon.ico", "./favicon.ico")
+
 	r.GET("/home", startConversation)
 	r.POST("/home", respondToUser)
 	r.GET("/", login)
@@ -49,7 +51,7 @@ func respondToUser(c *gin.Context) {
 	userMsg := c.Request.Form["userMsg"][0]
 	log.Println(userMsg)
 
-	botResponse, err := textPredictGemma(userMsg, projectID)
+	botResponse, err := textPredictGemini(userMsg, projectID)
 	if err != nil {
 		log.Println(err)
 		botResponse = "Oops! I had troubles understanding that ..."

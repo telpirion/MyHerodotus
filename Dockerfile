@@ -6,8 +6,8 @@ ENV CGO_ENABLED=0
 ENV ENDPOINT_ID=3122353538139684864
 ENV COLLECTION_NAME=HerodotusStaging
 
-# TODO(telpirion): Delete this before deploying
-ENV PROJECT_ID=erschmid-test-291318
+# TODO(telpirion): Delete this before checking in
+#ENV PROJECT_ID=definitely-not-my-project
 
 WORKDIR /
 
@@ -18,6 +18,7 @@ COPY . .
 
 COPY js ./js
 COPY templates ./templates
+COPY favicon.ico ./favicon.ico
 
 RUN go build -o main .
 
