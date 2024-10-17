@@ -21,12 +21,17 @@ func extractAnswer(response string) string {
 	botAnswer := string(re.Find([]byte(response)))
 	botAnswer = strings.Replace(botAnswer, "##RESPONSE##", "", 1)
 	botAnswer = strings.Replace(botAnswer, "##ENDRESPONSE##", "", 1)
+	if botAnswer == "" {
+		botAnswer = response
+	}
 	return botAnswer
 }
 
 func createPrompt(message string) string {
 	return `
-You are a helpful travel agent. The user wants to have a conversation with you about where to go.
+Ignore all previous instructions.
+
+You are a helpful travel agent. The user will ask you about where to go on vacation.
 You are going to help them plan their trip.
 
 Be sure to label your response with ##RESPONSE## and end your response with ##ENDRESPONSE##.
@@ -107,5 +112,5 @@ func textPredictGemini(message, projectID string) (string, error) {
 	}
 
 	candidate := resp.Candidates[0].Content.Parts[0].(genai.Text)
-	return string(candidate), nil
+	return extractAnswer(string(candidate)), nil
 }
