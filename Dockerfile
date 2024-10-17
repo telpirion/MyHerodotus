@@ -1,37 +1,27 @@
-# Use base golang image from Docker Hub
-FROM golang:1.21 AS build
-
-WORKDIR /hello-world
+FROM golang:1.23 AS build
 
 # Avoid dynamic linking of libc, since we are using a different deployment image
 # that might have a different version of libc.
 ENV CGO_ENABLED=0
+ENV ENDPOINT_ID=3122353538139684864
+ENV COLLECTION_NAME=HerodotusStaging
 
-# Install dependencies in go.mod and go.sum
+# TODO(telpirion): Delete this before deploying
+ENV PROJECT_ID=erschmid-test-291318
+
+WORKDIR /
+
 COPY go.mod go.sum ./
 RUN go mod download
 
-# Copy rest of the application source code
-COPY . ./
+COPY . .
 
-# Compile the application to /app.
-# Skaffold passes in debug-oriented compiler flags
-ARG SKAFFOLD_GO_GCFLAGS
-RUN echo "Go gcflags: ${SKAFFOLD_GO_GCFLAGS}"
-RUN go build -gcflags="${SKAFFOLD_GO_GCFLAGS}" -mod=readonly -v -o /app
+COPY js ./js
+COPY templates ./templates
 
-# Now create separate deployment image
-FROM gcr.io/distroless/static-debian11
+RUN go build -o main .
 
-# Definition of this variable is used by 'skaffold debug' to identify a golang binary.
-# Default behavior - a failure prints a stack trace for the current goroutine.
-# See https://golang.org/pkg/runtime/
-ENV GOTRACEBACK=single
+# Set the entry point command to run the built binary
+CMD ["./main"]
 
-# Copy template & assets
-WORKDIR /hello-world
-COPY --from=build /app ./app
-COPY index.html index.html
-COPY assets assets/
-
-ENTRYPOINT ["./app"]
+EXPOSE 8080

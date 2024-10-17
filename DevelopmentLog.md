@@ -1,5 +1,30 @@
 # Friction Log
 
+For this week's activities, we need to accomplish the following:
+
+- [x] Deploy a Gemma2 model to an endpoint.
+
+   _I've chosen to deploy to Vertex._
+
+- [x] Build a sample chat app that connects to the model. 
+
+  _I built this with Go, Gin, Bulma (FE)._
+
+- []  Deploy the sample chat app.
+
+  _In progress_
+
+- []  Instrument the application to log to Cloud Observability.
+
+- [x] Persist model interactions into a Database. 
+
+  _I have integrated Firestore into the app._
+
+- []  Identify data that needs to be persisted to make response history useful.
+
+  _I have integrated Firebase auth into the app. This asks users to sign in so that their interactions are
+  stored 
+
 ## Learning how to create a templated web server with Go
 
 Sources:
@@ -85,3 +110,44 @@ Sources:
 + 👎 (OLD?) https://firebase.google.com/docs/auth/web/firebaseui#email_address_and_password
 + https://firebase.google.com/docs/web/setup#add-sdk-and-initialize
 + https://firebase.google.com/docs/auth/web/google-signin
+
+## Deploying
+
+<<Unhappy>>I'm a novice with Dockerfiles. I wanted to make sure that all my Go and client files are deployed to the image.
+(They are.) But then I need to make sure that the application knows how to load them (it doesn't). How do I test
+this?
+
+I decided to build & run the Dockerfile locally (in Cloud Shell) to check that it works correct. The deployment
+process to Cloud Run/Build is sooooo long and I want to make sure that I get it right.
+
+<<Unhappy>>It's very frustrating that I can't install the Docker client on my work laptop. It would
+be so much more convenient for me to build & run locally so that I can inspect the built artifacts and logs :/
+
+To build & run from project root:
+
+```sh
+docker build . -t myherodotus -f Dockerfile
+
+docker run -it --rm -p 8080:8080 --name myherodotus-running myherodotus
+```
+
+To kill the Docker container that is running:
+
+```sh
+# Show all the running containers
+docker ps -a
+
+docker kill [CONTAINER_NAME]
+```
+
+To upload the Docker image to Artifact Registry:
+
+
+
+
+Sources:
+
++ https://github.com/telpirion/telpirion_com/blob/main/README.md
++ https://medium.com/@manzurulhoque/deploying-a-golang-web-app-to-google-cloud-run-a-step-by-step-guide-619e6bb1836e
++ https://cloud.google.com/run/docs/quickstarts/build-and-deploy/deploy-go-service
++ https://phoenixnap.com/kb/docker-environment-variables

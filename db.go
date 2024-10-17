@@ -31,6 +31,7 @@ package main
 
 import (
 	"context"
+	"os"
 	"time"
 
 	"cloud.google.com/go/firestore"
@@ -41,9 +42,10 @@ import (
 
 const (
 	DBName            string = "l200"
-	CollectionName    string = "Herodotus"
 	SubCollectionName string = "Conversations"
 )
+
+var CollectionName string = "Herodotus"
 
 type ConversationBit struct {
 	BotResponse string
@@ -58,6 +60,13 @@ type ConversationHistory struct {
 
 func saveConversation(convo ConversationBit, userEmail, projectID string) error {
 	ctx := context.Background()
+
+	// Get CollectionName for running in staging or prod
+	_collectionName, ok := os.LookupEnv("COLLECTION_NAME")
+	if ok {
+		CollectionName = _collectionName
+	}
+
 	client, err := firestore.NewClientWithDatabase(ctx, projectID, DBName)
 	if err != nil {
 		return err
