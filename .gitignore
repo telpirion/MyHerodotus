@@ -1,3 +1,6 @@
 .idea
 .readmes
 .vscode
+
+# Firebase app config
+/js/appInit.js
