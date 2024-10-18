@@ -1,5 +1,13 @@
 # Friction Log
 
+## Architecture
+
+TODO(telpirion): Insert architectural diagram
+
++ **Presentation tier**: Bulma, plain-old JS, Firebase auth
++ **Application tier**: Go, Gin templates, Vertex AI model, Cloud Logging
++ **Data tier**: Firestore
+
 ## Week 1
 
 For this week's activities, we need to accomplish the following:
@@ -54,12 +62,6 @@ Sources:
 
 + 👍 https://fonts.google.com/icons
 + 👍 https://bulma.io/documentation/elements/button/
-
-## Architecture
-
-Presentation tier: Bulma, plain-old JS, (TODO) Firebase sign-in
-Application tier: Go, Gin templates, Vertex AI model
-Data tier: Firestore
 
 ## Integrating Firestore
 
@@ -164,7 +166,7 @@ gcloud artifacts repositories create my-herodotus --repository-format=docker \
     --project=${PROJECT_ID}
 ```
 
-To upload the Docker image to Artifact Registry:
+To upload the Docker image to Artifact Registry (where `vSEMVER` is the tag)
 
 ```sh
 docker tag myherodotus \
