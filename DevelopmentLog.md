@@ -1,5 +1,7 @@
 # Friction Log
 
+## Week 1
+
 For this week's activities, we need to accomplish the following:
 
 - [x] Deploy a Gemma2 model to an endpoint.
@@ -14,13 +16,17 @@ For this week's activities, we need to accomplish the following:
 
   _The app has been deployed [here](https://myherodotus-1025771077852.us-west1.run.app/)._
 
-- []  Instrument the application to log to Cloud Observability.
+- [x]  Instrument the application for Cloud Observability (Logging).
+
+  _I have instrumented the application for Cloud Logging._
+
+- [ ]  Instrument the application for Cloud Observability (Monitoring).
 
 - [x] Persist model interactions into a Database. 
 
   _I have integrated Firestore into the app._
 
-- []  Identify data that needs to be persisted to make response history useful.
+- [ ]  Identify data that needs to be persisted to make response history useful.
 
   _I have integrated Firebase auth into the app. This asks users to sign in so that their interactions are
   stored keyed into the user's email. I may want to separately store query & responses from the models to
@@ -28,9 +34,9 @@ For this week's activities, we need to accomplish the following:
 
 ## Tracking future upgrades to app
 
-- [] Provide feedback mechanism for users to rate responses.
-- [] Track user feedback across sessions and users.
-- [] Tag user feedback with model type, endpoint ID, prompt
+- [ ] Provide feedback mechanism for users to rate responses.
+- [ ] Track user feedback across sessions and users.
+- [ ] Tag user feedback with model type, endpoint ID, prompt
 
 ## Learning how to create a templated web server with Go
 
@@ -167,6 +173,7 @@ us-west1-docker.pkg.dev/${PROJECT_ID}/my-herodotus/base-image:v1
 docker push us-west1-docker.pkg.dev/${PROJECT_ID}/my-herodotus/base-image:v1
 ```
 
+<<Happy>> Deploying a new version of my web app from Artifact Registry was shockingly intuitive.
 
 Sources:
 
@@ -174,3 +181,18 @@ Sources:
 + https://medium.com/@manzurulhoque/deploying-a-golang-web-app-to-google-cloud-run-a-step-by-step-guide-619e6bb1836e
 + https://cloud.google.com/run/docs/quickstarts/build-and-deploy/deploy-go-service
 + https://phoenixnap.com/kb/docker-environment-variables
+
+## Integrating Cloud Observability (Logging)
+
+The basic quickstart is in Python only :/.
+
+<<Anxious>> The version of the tutorial in Go says "use standard logging," but it shows how to use the
+cloud.google.com/go/logging library (not the standard `log` package).
+
+<<Curious>> It seems like reinitializing the LoggingClient each time I need to log a message is
+a bit repetitive. I wonder if there is a better pattern for this?
+
+Sources:
+
++ https://cloud.google.com/logging/docs/setup/go
++ https://cloud.google.com/logging/docs/write-query-log-entries-python

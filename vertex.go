@@ -58,7 +58,8 @@ func textPredictGemma(message, projectID string) (string, error) {
 	apiEndpoint := fmt.Sprintf("%s-aiplatform.googleapis.com:443", location)
 	client, err := aiplatform.NewPredictionClient(ctx, option.WithEndpoint(apiEndpoint))
 	if err != nil {
-		return "", fmt.Errorf("unable to create prediction client: %v", err)
+		LogError(fmt.Sprintf("unable to create prediction client: %v\n", err))
+		return "", err
 	}
 	defer client.Close()
 
@@ -69,6 +70,7 @@ func textPredictGemma(message, projectID string) (string, error) {
 		"parameters": parameters,
 	})
 	if err != nil {
+		LogError(fmt.Sprintf("unable to create prompt value: %v\n", err))
 		return "", err
 	}
 
@@ -79,6 +81,7 @@ func textPredictGemma(message, projectID string) (string, error) {
 
 	resp, err := client.Predict(ctx, req)
 	if err != nil {
+		LogError(fmt.Sprintf("unable to make prediction: %v\n", err))
 		return "", err
 	}
 
@@ -97,7 +100,7 @@ func textPredictGemini(message, projectID string) (string, error) {
 
 	client, err := genai.NewClient(ctx, projectID, location)
 	if err != nil {
-		log.Println(err)
+		LogError(fmt.Sprintf("unable to create genai client: %v\n", err))
 		return "", err
 	}
 	defer client.Close()
@@ -107,7 +110,7 @@ func textPredictGemini(message, projectID string) (string, error) {
 
 	resp, err := llm.GenerateContent(ctx, genai.Text(prompt))
 	if err != nil {
-		log.Println(err)
+		LogError(fmt.Sprintf("unable to generate content: %v\n", err))
 		return "", err
 	}
 

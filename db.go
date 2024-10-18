@@ -31,6 +31,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"time"
 
@@ -69,6 +70,7 @@ func saveConversation(convo ConversationBit, userEmail, projectID string) error 
 
 	client, err := firestore.NewClientWithDatabase(ctx, projectID, DBName)
 	if err != nil {
+		LogError(fmt.Sprintf("firestore.Client: %v\n", err))
 		return err
 	}
 	defer client.Close()
@@ -85,6 +87,7 @@ func getConversation(userEmail, projectID string) ([]ConversationBit, error) {
 	conversations := []ConversationBit{}
 	client, err := firestore.NewClientWithDatabase(ctx, projectID, DBName)
 	if err != nil {
+		LogError(fmt.Sprintf("firestore.Client: %v\n", err))
 		return conversations, err
 	}
 	defer client.Close()
@@ -96,6 +99,7 @@ func getConversation(userEmail, projectID string) ([]ConversationBit, error) {
 		return conversations, nil
 	}
 	if err != nil {
+		LogError(fmt.Sprintf("firestore.DocumentRef: %v\n", err))
 		return conversations, err
 	}
 
@@ -106,11 +110,13 @@ func getConversation(userEmail, projectID string) ([]ConversationBit, error) {
 			break
 		}
 		if err != nil {
+			LogError(fmt.Sprintf("Firestore Iterator: %v\n", err))
 			return conversations, err
 		}
 		var convo ConversationBit
 		err = doc.DataTo(&convo)
 		if err != nil {
+			LogError(fmt.Sprintf("Firestore document unmarshaling: %v\n", err))
 			continue
 		}
 		conversations = append(conversations, convo)
