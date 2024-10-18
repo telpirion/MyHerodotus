@@ -13,7 +13,6 @@ import (
 var (
 	projectID  string
 	userEmail  string = "anonymous@example.com"
-	loggerName string = "HerodotusDev"
 )
 
 type ClientError struct {
@@ -29,7 +28,6 @@ func main() {
 	if _loggerName, ok := os.LookupEnv("LOGGER_NAME"); ok {
 		loggerName = _loggerName
 	}
-	startLogging(projectID, loggerName)
 	LogInfo("Starting Herodotus...")
 
 	r := gin.Default()
