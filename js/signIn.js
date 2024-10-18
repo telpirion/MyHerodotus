@@ -13,16 +13,28 @@ const signIn = () => {
 
         window.location = `/home?user=${user.email}`;
       }).catch((error) => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
+        const code = error.code;
+        const message = error.message;
         const email = error.customData.email;
         const credential = GoogleAuthProvider.credentialFromError(error);
 
         console.log(`
-Error code: ${errorCode}
-Error message: ${errorMessage}
+Error code: ${code}
+Error message: ${message}
 Email: ${email}
 `)
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", "/logClientError", true)
+        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        xhr.send(JSON.stringify( 
+          {
+            code,
+            email,
+            message,
+            credential,
+          }
+        ));
+        window.location = "/error"
       });
 }
 

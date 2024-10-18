@@ -1,5 +1,7 @@
 # Friction Log
 
+## Week 1
+
 For this week's activities, we need to accomplish the following:
 
 - [x] Deploy a Gemma2 model to an endpoint.
@@ -14,7 +16,11 @@ For this week's activities, we need to accomplish the following:
 
   _The app has been deployed [here](https://myherodotus-1025771077852.us-west1.run.app/)._
 
-- []  Instrument the application to log to Cloud Observability.
+- [x]  Instrument the application for Cloud Observability (Logging).
+
+  _I have instrumented the application for Cloud Logging._
+
+- []  Instrument the application for Cloud Observability (Monitoring).
 
 - [x] Persist model interactions into a Database. 
 
@@ -167,6 +173,7 @@ us-west1-docker.pkg.dev/${PROJECT_ID}/my-herodotus/base-image:v1
 docker push us-west1-docker.pkg.dev/${PROJECT_ID}/my-herodotus/base-image:v1
 ```
 
+<<Happy>> Deploying a new version of my web app from Artifact Registry was shockingly intuitive.
 
 Sources:
 
@@ -174,3 +181,15 @@ Sources:
 + https://medium.com/@manzurulhoque/deploying-a-golang-web-app-to-google-cloud-run-a-step-by-step-guide-619e6bb1836e
 + https://cloud.google.com/run/docs/quickstarts/build-and-deploy/deploy-go-service
 + https://phoenixnap.com/kb/docker-environment-variables
+
+## Integrating Cloud Observability (Logging)
+
+The basic quickstart is in Python only :/.
+
+<<Anxious>> The version of the tutorial in Go says "use standard logging," but it shows how to use the
+cloud.google.com/go/logging library (not the standard `log` package).
+
+Sources:
+
++ https://cloud.google.com/logging/docs/setup/go
++ https://cloud.google.com/logging/docs/write-query-log-entries-python
