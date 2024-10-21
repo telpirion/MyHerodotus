@@ -200,6 +200,8 @@ Sources:
 
 # Hardening authentication (client- & server-side)
 
+_Date: 2024-10-21_ #6
+
 Realized over the weekend that users can navigate directly to /home without authenticating.
 
 + [x] Add a check (on the server) that the user's email is propogated. 
@@ -213,3 +215,4 @@ Sources:
 + https://firebase.google.com/docs/auth/web/manage-users 
 
 ## Integrating Cloud Monitoring (Open Telemetry)
+
