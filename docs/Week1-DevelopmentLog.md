@@ -1,4 +1,4 @@
-# Friction Log
+# Week 1 Development Log
 
 ## Architecture
 
@@ -8,7 +8,7 @@ TODO(telpirion): Insert architectural diagram
 + **Application tier**: Go, Gin templates, Vertex AI model, Cloud Logging
 + **Data tier**: Firestore
 
-## Week 1
+## Objectives
 
 For this week's activities, we need to accomplish the following:
 
@@ -34,7 +34,7 @@ For this week's activities, we need to accomplish the following:
 
   _I have integrated Firestore into the app._
 
-- [ ]  Identify data that needs to be persisted to make response history useful.
+- [x]  Identify data that needs to be persisted to make response history useful.
 
   _I have integrated Firebase auth into the app. This asks users to sign in so that their interactions are
   stored keyed into the user's email. I may want to separately store query & responses from the models to
