@@ -165,13 +165,13 @@ gcloud artifacts repositories create my-herodotus --repository-format=docker \
     --project=${PROJECT_ID}
 ```
 
-To upload the Docker image to Artifact Registry (where `vSEMVER` is the tag)
+To upload the Docker image to Artifact Registry (where `vSEMVER` is the tag in format "v.NN.NN.NN")
 
 ```sh
 docker tag myherodotus \
-us-west1-docker.pkg.dev/${PROJECT_ID}/my-herodotus/base-image:v1
+us-west1-docker.pkg.dev/${PROJECT_ID}/my-herodotus/base-image:${SEMVER}
 
-docker push us-west1-docker.pkg.dev/${PROJECT_ID}/my-herodotus/base-image:v1
+docker push us-west1-docker.pkg.dev/${PROJECT_ID}/my-herodotus/base-image:${SEMVER}
 ```
 
 <span style="background-color: rgb(100, 200, 150);">Happy</span> Deploying a new version of my web app from Artifact Registry was shockingly intuitive.
