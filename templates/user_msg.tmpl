@@ -1,5 +1,5 @@
 <article class="message is-primary">
-  <form action="/home" method="post">
+  <form id="userMsg" action="/home?user={{ .Email }}" method="post">
     <div class="message-header">
       <p>User</p>
         <button class="button is-primary-dark-invert" type="submit">
@@ -15,4 +15,5 @@
       </div>
     </div>
   </form>
+  <script type="module" defer src="js/userMsg.js"></script>
 </article>

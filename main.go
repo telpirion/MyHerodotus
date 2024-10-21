@@ -11,8 +11,10 @@ import (
 )
 
 var (
-	projectID  string
-	userEmail  string = "anonymous@example.com"
+	r              *gin.Engine
+	projectID      string
+	userEmail      string = "anonymous@example.com"
+	userEmailParam string = "user"
 )
 
 type ClientError struct {
@@ -30,7 +32,7 @@ func main() {
 	}
 	LogInfo("Starting Herodotus...")
 
-	r := gin.Default()
+	r = gin.Default()
 	r.LoadHTMLGlob("templates/*")
 	r.Static("/js", "./js")
 	r.StaticFile("/favicon.ico", "./favicon.ico")
@@ -49,22 +51,31 @@ func login(c *gin.Context) {
 }
 
 func startConversation(c *gin.Context) {
-	params := c.Params
-	log.Println(params)
+
+	// extractParams will redirect if user isn't logged in.
+	userEmail = extractParams(c)
+
 	LogInfo("Start conversation request received")
 
 	c.HTML(http.StatusOK, "index.html", gin.H{
 		"Message": struct {
 			Message string
+			Email   string
 		}{
 			Message: "Hello! I hear that you want to go on a trip somewhere. Tell me about it.",
+			Email:   userEmail,
 		},
 	})
 }
 
 func respondToUser(c *gin.Context) {
+
+	// extractParams will redirect if user isn't logged in.
+	userEmail = extractParams(c)
+
 	LogInfo("Respond to user request received")
 
+	// Parse Form
 	c.Request.ParseForm()
 	userMsg := c.Request.Form["userMsg"][0]
 	log.Println(userMsg)
@@ -92,8 +103,10 @@ func respondToUser(c *gin.Context) {
 	c.HTML(http.StatusOK, "index.html", gin.H{
 		"Message": struct {
 			Message string
+			Email   string
 		}{
 			Message: botResponse,
+			Email:   userEmail,
 		},
 	})
 }
@@ -109,4 +122,15 @@ func clientError(c *gin.Context) {
 	}
 	LogError(fmt.Sprintf("clientError: %s, %s, %s\n", cError.Code, cError.Message, cError.Email))
 	c.JSON(http.StatusOK, gin.H{"error": "message logged"})
+}
+
+func extractParams(c *gin.Context) string {
+	// Verify that the user is signed in before answering
+	userEmail = c.Query(userEmailParam)
+	if userEmail == "" {
+		LogWarning("User attempted to navigate directly to /home; redirected to sign-in")
+		c.Request.URL.Path = "/"
+		r.HandleContext(c)
+	}
+	return userEmail
 }
