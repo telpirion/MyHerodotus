@@ -1,6 +1,14 @@
-# Friction Log
+# Week 1 Development Log
 
-## Week 1
+## Architecture
+
+TODO(telpirion): Insert architectural diagram
+
++ **Presentation tier**: Bulma, plain-old JS, Firebase auth
++ **Application tier**: Go, Gin templates, Vertex AI model, Cloud Logging
++ **Data tier**: Firestore
+
+## Objectives
 
 For this week's activities, we need to accomplish the following:
 
@@ -26,7 +34,7 @@ For this week's activities, we need to accomplish the following:
 
   _I have integrated Firestore into the app._
 
-- [ ]  Identify data that needs to be persisted to make response history useful.
+- [x]  Identify data that needs to be persisted to make response history useful.
 
   _I have integrated Firebase auth into the app. This asks users to sign in so that their interactions are
   stored keyed into the user's email. I may want to separately store query & responses from the models to
@@ -54,12 +62,6 @@ Sources:
 
 + 👍 https://fonts.google.com/icons
 + 👍 https://bulma.io/documentation/elements/button/
-
-## Architecture
-
-Presentation tier: Bulma, plain-old JS, (TODO) Firebase sign-in
-Application tier: Go, Gin templates, Vertex AI model
-Data tier: Firestore
 
 ## Integrating Firestore
 
@@ -164,7 +166,7 @@ gcloud artifacts repositories create my-herodotus --repository-format=docker \
     --project=${PROJECT_ID}
 ```
 
-To upload the Docker image to Artifact Registry:
+To upload the Docker image to Artifact Registry (where `vSEMVER` is the tag)
 
 ```sh
 docker tag myherodotus \
