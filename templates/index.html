@@ -27,7 +27,9 @@
     
         {{ template "herodotus_msg.tmpl" .Message }}
     
-        {{ template "user_msg.tmpl" }}
+        {{ template "user_msg.tmpl" .Message }}
     </div>
+    <script type="module" src="js/appInit.js"></script>
+    <script type="module" defer src="js/validateAuth.js"></script>
 </body>
 </html>

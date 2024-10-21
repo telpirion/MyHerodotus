@@ -46,7 +46,7 @@ const (
 	SubCollectionName string = "Conversations"
 )
 
-var CollectionName string = "Herodotus"
+var CollectionName string = "HerodotusDev"
 
 type ConversationBit struct {
 	BotResponse string

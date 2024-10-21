@@ -65,22 +65,22 @@ Sources:
 
 ## Integrating Firestore
 
-<<Unhappy>> Updating array fields in Firestore is hard. Too hard. Go doesn't support the `arrayUnion` operation in Firestore :/
+<span style="background-color: red;">Unhappy</span> Updating array fields in Firestore is hard. Too hard. Go doesn't support the `arrayUnion` operation in Firestore :/
 
 Switched to SubCollection of document
 
 ## Deploying Gemma model from Model Garden
 
-<<Unhappy>> Try 1: tried deployment from Pantheon. I don't think it worked ... :/
+<span style="background-color: red;">Unhappy</span> Try 1: tried deployment from Pantheon. I don't think it worked ... :/
 
 The activity bar in Pantheon says that something is happening, but that's the only indication I have that a Gemma model is being deployed.
 
 I'm going to use Gemini 1.5 Flash to continue prototyping.
 
-<<Anxious>> I used the [official Gemma2 prediction sample](https://github.com/GoogleCloudPlatform/golang-samples/pull/4395/files) but
+<span style="background-color: yellow;">Anxious</span> I used the [official Gemma2 prediction sample](https://github.com/GoogleCloudPlatform/golang-samples/pull/4395/files) but
 the output is awful. I think we need to change the temperature, top-p, and top-k settings.
 
-<<Unhappy>> Gemma2 responses are ... awful. Even with changing the top-p and temperature settings. It looks like the parameters setting
+<span style="background-color: red;">Unhappy</span> Gemma2 responses are ... awful. Even with changing the top-p and temperature settings. It looks like the parameters setting
 is not required; I will remove it.
 
 Even with removing the temperature settings, the responses are garbage. If I were releasing this publicly, I would rely
@@ -100,8 +100,7 @@ Sources:
 
 ## Building Go on Cloud Shell
 
-
-<<Unhappy>>Cloud Shell ran out of room with my successive Go builds. I had to clean the cache.
+<span style="background-color: red;">Unhappy</span>Cloud Shell ran out of room with my successive Go builds. I had to clean the cache.
 
 ```sh
 go clean -cache
@@ -113,7 +112,7 @@ Sources:
 
 ## Integrating Firebase auth
 
-<<Unhappy>> Setting up my Authentication section ... To set up Google Auth, I need to provide a Web client ID and Web client secret.
+<span style="background-color: red;">Unhappy</span> Setting up my Authentication section ... To set up Google Auth, I need to provide a Web client ID and Web client secret.
 I'm sure that I can find it, but I have to go hunting around for it
 
 After finally hacking something that works (not documented), I can't get the redirect to work.
@@ -131,14 +130,14 @@ Sources:
 
 ## Deploying
 
-<<Unhappy>>I'm a novice with Dockerfiles. I wanted to make sure that all my Go and client files are deployed to the image.
+<span style="background-color: red;">Unhappy</span>I'm a novice with Dockerfiles. I wanted to make sure that all my Go and client files are deployed to the image.
 (They are.) But then I need to make sure that the application knows how to load them (it doesn't). How do I test
 this?
 
 I decided to build & run the Dockerfile locally (in Cloud Shell) to check that it works correct. The deployment
 process to Cloud Run/Build is sooooo long and I want to make sure that I get it right.
 
-<<Unhappy>>It's very frustrating that I can't install the Docker client on my work laptop. It would
+<span style="background-color: red;">Unhappy</span>It's very frustrating that I can't install the Docker client on my work laptop. It would
 be so much more convenient for me to build & run locally so that I can inspect the built artifacts and logs :/
 
 To build & run from project root:
@@ -175,7 +174,7 @@ us-west1-docker.pkg.dev/${PROJECT_ID}/my-herodotus/base-image:v1
 docker push us-west1-docker.pkg.dev/${PROJECT_ID}/my-herodotus/base-image:v1
 ```
 
-<<Happy>> Deploying a new version of my web app from Artifact Registry was shockingly intuitive.
+<span style="background-color: rgb(100, 200, 150);">Happy</span> Deploying a new version of my web app from Artifact Registry was shockingly intuitive.
 
 Sources:
 
@@ -188,13 +187,29 @@ Sources:
 
 The basic quickstart is in Python only :/.
 
-<<Anxious>> The version of the tutorial in Go says "use standard logging," but it shows how to use the
+<span style="background-color: yellow;">Anxious</span> The version of the tutorial in Go says "use standard logging," but it shows how to use the
 cloud.google.com/go/logging library (not the standard `log` package).
 
-<<Curious>> It seems like reinitializing the LoggingClient each time I need to log a message is
+<span style="background-color: rgb(100, 150, 200);">Curious</span> It seems like reinitializing the LoggingClient each time I need to log a message is
 a bit repetitive. I wonder if there is a better pattern for this?
 
 Sources:
 
 + https://cloud.google.com/logging/docs/setup/go
 + https://cloud.google.com/logging/docs/write-query-log-entries-python
+
+# Hardening authentication (client- & server-side)
+
+Realized over the weekend that users can navigate directly to /home without authenticating.
+
++ [x] Add a check (on the server) that the user's email is propogated. 
++ [x] Add a check (in the JS) that the user has signed-in
+
+TODO(telpirion): ensure that user emails are stored in a obfuscated manner
+
+Sources:
+
++ https://gin-gonic.com/docs/examples/redirects/
++ https://firebase.google.com/docs/auth/web/manage-users 
+
+## Integrating Cloud Monitoring (Open Telemetry)
