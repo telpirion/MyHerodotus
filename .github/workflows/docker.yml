@@ -13,3 +13,4 @@ jobs:
     - name: Build Docker image
       run: |
         docker build . -t myherodotus -f Dockerfile
+      working-directory: .
