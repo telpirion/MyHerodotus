@@ -198,7 +198,7 @@ Sources:
 + https://cloud.google.com/logging/docs/setup/go
 + https://cloud.google.com/logging/docs/write-query-log-entries-python
 
-# Hardening authentication (client- & server-side)
+## Hardening authentication (client- & server-side)
 
 _Date: 2024-10-21_ #6
 
