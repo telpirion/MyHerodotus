@@ -24,11 +24,17 @@ For this week's activities, we need to accomplish the following:
 
   _The app has been deployed [here](https://myherodotus-1025771077852.us-west1.run.app/)._
 
-- [x]  Instrument the application for Cloud Observability (Logging).
+- [x]  Instrument the application for Cloud Observability (Logging): logging.
 
   _I have instrumented the application for Cloud Logging._
 
-- [ ]  Instrument the application for Cloud Observability (Monitoring).
+- [x]  Instrument the application for Cloud Observability (Monitoring): counters.
+
+  _I have defined custom counter metrics in Cloud Console._
+
+- [x]  Instrument the application for Cloud Observability (Monitoring): time series.
+
+  _I have added time series tracking to the app using the Monitoring API._
 
 - [x] Persist model interactions into a Database. 
 
@@ -214,5 +220,46 @@ Sources:
 + https://gin-gonic.com/docs/examples/redirects/
 + https://firebase.google.com/docs/auth/web/manage-users 
 
-## Integrating Cloud Monitoring (Open Telemetry)
+
+## Integrating Cloud Logging (counter metrics)
+
+I wrote some basic counter metrics using the Cloud Console, specifically looking for start of conversations
+and end of conversations.
+
+<span style="background-color: yellow;">Anxious</span> I _think_ I created some useful metrics:
+
+```
+resource.type = "cloud_run_revision" AND textPayload : "Respond to user request received"
+```
+
+and
+
+```
+resource.type = "cloud_run_revision" AND textPayload : "Start conversation request received"
+```
+
+Sources:
+
++ https://cloud.google.com/logging/docs/view/logging-query-language
++ https://cloud.google.com/logging/docs/logs-based-metrics/counter-metrics
+
+## Integrating Cloud Monitoring (time series)
+
+_Date: 2024-10-22_ 
+
+<span style="background-color: yellow;">Anxious</span> The Google Cloud Observability docs are overwhelming.
+I thought it would be relatively easy to integrate traces into my application, but ... it's not. I'm also
+a bit perplexed that our docs advocate more strongly for an open source solution (OpenTelemetry) than our
+own APIs ...
+
+I decided just to use the code snippet I found and hope for the best :shrug:
+
+<span style="background-color: yellow;">Anxious</span> I'd like to do a trace, but I think I'd need to use
+OpenTelemetry for that. The process for setting up the traces is a bit daunting. I would need to create
+an Exporter and that sounds mystifying.
+
+Sources:
+
++ https://github.com/GoogleCloudPlatform/golang-samples/blob/HEAD/monitoring/custommetric/custommetric.go
++ 👎 (CONFUSING) https://cloud.google.com/monitoring/custom-metrics/creating-metrics
 
