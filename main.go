@@ -30,6 +30,11 @@ func main() {
 	if _loggerName, ok := os.LookupEnv("LOGGER_NAME"); ok {
 		loggerName = _loggerName
 	}
+	writeTimeSeriesValue(projectID, "Herodotus warming up")
+	defer func() {
+		writeTimeSeriesValue(projectID, "Herodotus shutting down")
+	}()
+
 	LogInfo("Starting Herodotus...")
 
 	r = gin.Default()
@@ -51,7 +56,7 @@ func login(c *gin.Context) {
 }
 
 func startConversation(c *gin.Context) {
-
+	writeTimeSeriesValue(projectID, "Start of conversation")
 	// extractParams will redirect if user isn't logged in.
 	userEmail = extractParams(c)
 
@@ -69,7 +74,7 @@ func startConversation(c *gin.Context) {
 }
 
 func respondToUser(c *gin.Context) {
-
+	defer writeTimeSeriesValue(projectID, "End of conversation")
 	// extractParams will redirect if user isn't logged in.
 	userEmail = extractParams(c)
 

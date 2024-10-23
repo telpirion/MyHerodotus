@@ -6,6 +6,7 @@ ENV CGO_ENABLED=0
 ENV ENDPOINT_ID=3122353538139684864
 ENV COLLECTION_NAME=HerodotusStaging
 ENV LOGGER_NAME=HerodotusStaging
+ENV CONFIGURATION_NAME=HerodotusStaging
 
 # TODO(telpirion): Delete this before checking in
 #ENV PROJECT_ID=definitely-not-my-project

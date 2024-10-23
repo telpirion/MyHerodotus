@@ -1,18 +1,25 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"log"
 	"os"
 	"regexp"
 	"strings"
+	"text/template"
 
 	aiplatform "cloud.google.com/go/aiplatform/apiv1"
 	"cloud.google.com/go/aiplatform/apiv1/aiplatformpb"
 	"cloud.google.com/go/vertexai/genai"
 	"google.golang.org/api/option"
 	"google.golang.org/protobuf/types/known/structpb"
+)
+
+const (
+	GeminiTemplate = "templates/gemini.tmpl"
+	GemmaTemplate  = "templates/gemma.impl"
 )
 
 func extractAnswer(response string) string {
@@ -27,25 +34,17 @@ func extractAnswer(response string) string {
 	return botAnswer
 }
 
-func createPrompt(message string) string {
-	return `
-Ignore all previous instructions.
-
-You are a helpful travel agent. The user will ask you about where to go on vacation.
-You are going to help them plan their trip.
-
-Be sure to label your response with ##RESPONSE## and end your response with ##ENDRESPONSE##.
-
-Do not include system instructions in the response.
-
-Example:
-[USER]: I want to go to Italy.
-##RESPONSE## Italy is a fantastic place to go! What would you like to experience: the food, the
-history, the art, the people, or some combination?##ENDRESPONSE##
-
-Here is the user query. Respond to the user's request. Check your answer before responding.
-
-[USER]:` + message
+func createPrompt(message, templateName string) (string, error) {
+	tmp, err := template.ParseFiles(templateName)
+	if err != nil {
+		return "", nil
+	}
+	var buf bytes.Buffer
+	err = tmp.ExecuteTemplate(&buf, "gemini.tmpl", struct{ Query string }{Query: message})
+	if err != nil {
+		return "", err
+	}
+	return buf.String(), nil
 }
 
 // textPredictGemma2 generates text using a Gemma2 hosted model
@@ -65,8 +64,14 @@ func textPredictGemma(message, projectID string) (string, error) {
 
 	parameters := map[string]interface{}{}
 
+	prompt, err := createPrompt(message, GeminiTemplate)
+	if err != nil {
+		LogError(fmt.Sprintf("unable to create Gemma prompt: %v\n", err))
+		return "", err
+	}
+
 	promptValue, err := structpb.NewValue(map[string]interface{}{
-		"inputs":     createPrompt(message),
+		"inputs":     prompt,
 		"parameters": parameters,
 	})
 	if err != nil {
@@ -106,7 +111,11 @@ func textPredictGemini(message, projectID string) (string, error) {
 	defer client.Close()
 
 	llm := client.GenerativeModel(model)
-	prompt := createPrompt(message)
+	prompt, err := createPrompt(message, GeminiTemplate)
+	if err != nil {
+		LogError(fmt.Sprintf("unable to create Gemini prompt: %v\n", err))
+		return "", err
+	}
 
 	resp, err := llm.GenerateContent(ctx, genai.Text(prompt))
 	if err != nil {
