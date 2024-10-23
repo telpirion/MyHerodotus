@@ -261,5 +261,6 @@ an Exporter and that sounds mystifying.
 Sources:
 
 + https://github.com/GoogleCloudPlatform/golang-samples/blob/HEAD/monitoring/custommetric/custommetric.go
++ 👎 (CONFUSING) https://cloud.google.com/monitoring/api/metrics_gcp#gcp-run
 + 👎 (CONFUSING) https://cloud.google.com/monitoring/custom-metrics/creating-metrics
 
