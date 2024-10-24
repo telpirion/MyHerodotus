@@ -52,6 +52,7 @@ type ConversationBit struct {
 	BotResponse string
 	UserQuery   string
 	Model       string
+	Prompt      string
 	Created     time.Time
 }
 
@@ -60,7 +61,7 @@ type ConversationHistory struct {
 	Conversations []ConversationBit
 }
 
-func saveConversation(convo ConversationBit, userEmail, projectID string) error {
+func saveConversation(convo ConversationBit, userEmail, projectID string) (string, error) {
 	ctx := context.Background()
 
 	// Get CollectionName for running in staging or prod
@@ -72,15 +73,38 @@ func saveConversation(convo ConversationBit, userEmail, projectID string) error 
 	client, err := firestore.NewClientWithDatabase(ctx, projectID, DBName)
 	if err != nil {
 		LogError(fmt.Sprintf("firestore.Client: %v\n", err))
-		return err
+		return "", err
 	}
 	defer client.Close()
 
 	docRef := client.Collection(CollectionName).Doc(userEmail)
 	conversations := docRef.Collection(SubCollectionName)
-	_, _, err = conversations.Add(ctx, convo)
+	docRef, _, err = conversations.Add(ctx, convo)
 
-	return err
+	return docRef.ID, err
+}
+
+func updateConversation(documentId, userEmail, rating, projectID string) error {
+
+	// Get CollectionName for running in staging or prod
+	_collectionName, ok := os.LookupEnv("COLLECTION_NAME")
+	if ok {
+		CollectionName = _collectionName
+	}
+
+	ctx := context.Background()
+	client, err := firestore.NewClientWithDatabase(ctx, projectID, DBName)
+	if err != nil {
+		return err
+	}
+	defer client.Close()
+
+	docRef := client.Collection(CollectionName).Doc(userEmail).Collection(SubCollectionName).Doc(documentId)
+	docRef.Set(ctx, map[string]interface{}{
+		"rating": rating,
+	}, firestore.Merge(firestore.FieldPath{"rating"}))
+
+	return nil
 }
 
 func getConversation(userEmail, projectID string) ([]ConversationBit, error) {

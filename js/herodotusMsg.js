@@ -7,14 +7,17 @@ window.addEventListener("load", function () {
 
     document.querySelectorAll(".thumb").forEach(e => {
         e.addEventListener("click", e => {
-            const rating = e.target.getAttribute("id");
-            const response = document.getElementById("messageBody").innerText;
+            const rating = e.currentTarget.getAttribute("id");
+            const botMessage = this.document.querySelector(".message-actual")
+            const document = botMessage.dataset.document;
+            const response = botMessage.textContent;
             const payload = {
                 rating,
                 response,
+                document,
             }
 
-            fetch(`/home?user=${user.email}`, {
+            fetch(`/rateResponse`, {
                 method: "POST",
                 body: JSON.stringify(payload),
                 headers: {

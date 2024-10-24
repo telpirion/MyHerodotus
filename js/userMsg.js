@@ -39,11 +39,13 @@ function processForm(e) {
     .then(data => {
         console.log(data);
         const response = data.Message.Message;
-        document.querySelector(".message-actual").textContent = response;
+        const botMessage = document.querySelector(".message-actual")
+        botMessage.textContent = response;
+        botMessage.dataset.document = data.Message.DocumentID;
 
         // Toggle visibility
-        document.querySelector("progress").classList.toggle("is-hidden");
-        document.querySelector(".message-actual").classList.toggle("is-hidden");
+        const evt = new Event("msg");
+        document.dispatchEvent(evt);
     })
     return true;
 }

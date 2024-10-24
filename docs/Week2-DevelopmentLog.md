@@ -25,11 +25,23 @@ For this week's activities, we need to accomplish the following:
 
    _I have moved prompts out into their own, version-controlled files_
 
-- [ ] Select version of prompt based upon model being called.
+- [x] Select version of prompt based upon model being called.
+
+  _I have the system reading which model the user has requested._
+
 - [ ] Experiment with prompting strategies to evaluate outcomes.
-- [ ] Provide feedback mechanism for users to rate responses.
-- [ ] Track user feedback across sessions and users.
-- [ ] Tag user feedback with model type, endpoint ID, prompt
+
+- [x] Provide feedback mechanism for users to rate responses.
+
+  _I have implemented a thumbs up / thumbs down system for rating bot responses._
+
+- [x] Track user feedback across sessions and users.
+
+  _I have set up my Firestore database to collect user queries, bot responses, and user ratings across sessions._
+
+- [x] Tag user feedback with model type, endpoint ID, prompt.
+
+  _I have set up the Firestore database so that model type and prompt are recorded._
 
 ## Moving prompts to their own templates
 
