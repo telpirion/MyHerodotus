@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -22,6 +23,17 @@ type ClientError struct {
 	Message    string `json:"message" binding:"required"`
 	Email      string `json:"email" binding:"required"`
 	Credential string `json:"credential" binding:"required"`
+}
+
+type UserRating struct {
+	BotResponse string `json:"response" binding:"required"`
+	UserRating  string `json:"rating"   binding:"required"`
+	DocumentID  string `json:"document" binding:"required"`
+}
+
+type UserMessage struct {
+	Message string `json:"message" binding:"required"`
+	Model   string `json:"model" binding:"required"`
 }
 
 func main() {
@@ -47,6 +59,8 @@ func main() {
 	r.GET("/", login)
 	r.POST("/logClientError", clientError)
 	r.GET("/error", errPage)
+	r.POST("/rateResponse", rateResponse)
+
 	log.Fatal(r.Run(":8080"))
 }
 
@@ -80,38 +94,54 @@ func respondToUser(c *gin.Context) {
 
 	LogInfo("Respond to user request received")
 
-	// Parse Form
-	c.Request.ParseForm()
-	userMsg := c.Request.Form["userMsg"][0]
-	log.Println(userMsg)
+	// Parse data
+	var userMsg UserMessage
+	var botResponse string
+	var promptTemplate string
+	err := c.BindJSON(&userMsg)
+	if err != nil {
+		LogError(fmt.Sprintf("Couldn't parse client message: %v\n", err))
+		c.JSON(http.StatusBadRequest, gin.H{
+			"Message": "Couldn't parse payload",
+		})
+		return
+	}
 
-	botResponse, err := textPredictGemini(userMsg, projectID)
+	if strings.ToLower(userMsg.Model) == "gemma" {
+		botResponse, err = textPredictGemma(userMsg.Message, projectID)
+		promptTemplate = GemmaTemplate
+	} else { // Gemini is default
+		botResponse, err = textPredictGemini(userMsg.Message, projectID)
+		promptTemplate = GeminiTemplate
+	}
 	if err != nil {
 		LogError(fmt.Sprintf("Bad response from Gemini  %v\n", err))
 		botResponse = "Oops! I had troubles understanding that ..."
 	}
 
 	convo := &ConversationBit{
-		UserQuery:   userMsg,
+		UserQuery:   userMsg.Message,
 		BotResponse: botResponse,
 		Created:     time.Now(),
+		Model:       userMsg.Model,
+		Prompt:      promptTemplate,
 	}
 
 	// Use a separate thread to store the conversation
-	go func() {
-		err := saveConversation(*convo, userEmail, projectID)
-		if err != nil {
-			LogError(fmt.Sprintf("Couldn't save conversation: %v\n", err))
-		}
-	}()
+	documentID, err := saveConversation(*convo, userEmail, projectID)
+	if err != nil {
+		LogError(fmt.Sprintf("Couldn't save conversation: %v\n", err))
+	}
 
-	c.HTML(http.StatusOK, "index.html", gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"Message": struct {
-			Message string
-			Email   string
+			Message    string
+			Email      string
+			DocumentID string
 		}{
-			Message: botResponse,
-			Email:   userEmail,
+			Message:    botResponse,
+			Email:      userEmail,
+			DocumentID: documentID,
 		},
 	})
 }
@@ -138,4 +168,29 @@ func extractParams(c *gin.Context) string {
 		r.HandleContext(c)
 	}
 	return userEmail
+}
+
+func rateResponse(c *gin.Context) {
+	LogInfo("User rating received")
+	var userRating UserRating
+	err := c.BindJSON(&userRating)
+	if err != nil {
+		LogError(err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{
+			"Message": "JSON incorrect",
+		})
+		return
+	}
+
+	err = updateConversation(userRating.DocumentID, userEmail, userRating.UserRating, projectID)
+	if err != nil {
+		LogError(err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{
+			"Message": "Couldn't record rating",
+		})
+		return
+	}
+	LogInfo("User rating successfully recorded")
+
+	c.JSON(http.StatusOK, gin.H{"success": "rating logged"})
 }

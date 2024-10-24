@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	metricType        = "custom.googleapis.com/conversation"
+	metricType        = "custom.googleapis.com/custom_measurement"
 	revisionName      = "myherodotus-00004-jcg" // TODO(telpirion): Get this dynamically
 	configurationName = "test"                  // TODO(telpirion): Figure out what this means?
 )
@@ -43,13 +43,13 @@ func writeTimeSeriesValue(projectID, label string) {
 				},
 			},
 			Resource: &monitoredres.MonitoredResource{
-				Type: "cloud_run_revision",
+				Type: "generic_task",
 				Labels: map[string]string{
-					"project_id":         projectID,
-					"service_name":       "myherodotus",
-					"revision_name":      revisionName,
-					"location":           "us-west1",
-					"configuration_name": configurationName,
+					"project_id": projectID,
+					"task_id":    "myherodotus",
+					"namespace":  revisionName,
+					"location":   "us-west1",
+					"job":        configurationName,
 				},
 			},
 			Points: []*monitoringpb.Point{{

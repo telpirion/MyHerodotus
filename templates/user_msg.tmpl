@@ -1,19 +1,17 @@
 <article class="message is-primary">
-  <form id="userMsg" action="/home?user={{ .Email }}" method="post">
-    <div class="message-header">
-      <p>User</p>
-        <button class="button is-primary-dark-invert" type="submit">
-        <span class="material-symbols-outlined">send</span>
-          Send
-        </button>
-    </div>
-    <div class="message-body">
-      <div class="field">
-        <div class="control">
-          <input class="input" name="userMsg" type="text" placeholder="I want to know about ...">
-        </div>
+  <div class="message-header">
+    <p>User</p>
+      <button id="send" class="button is-primary-dark-invert" type="submit">
+      <span class="material-symbols-outlined">send</span>
+        Send
+      </button>
+  </div>
+  <div class="message-body">
+    <div class="field">
+      <div class="control">
+        <input id="userMsg" class="input" name="userMsg" type="text" placeholder="I want to know about ...">
       </div>
     </div>
-  </form>
+  </div>
   <script type="module" defer src="js/userMsg.js"></script>
 </article>
