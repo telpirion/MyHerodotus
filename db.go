@@ -51,6 +51,7 @@ var CollectionName string = "HerodotusDev"
 type ConversationBit struct {
 	BotResponse string
 	UserQuery   string
+	Model       string
 	Created     time.Time
 }
 

@@ -1,8 +1,22 @@
 <article class="message is-info">
   <div class="message-header">
     <p>Herodotus</p>
+      <div class="field is-grouped">
+        <button id="thumbUp" class="thumb button is-primary-dark-invert">
+          <span class="material-symbols-outlined">
+          thumb_up
+          </span>
+        </button>
+        <button id="thumbDown" class="thumb button is-primary-dark-invert">
+          <span class="material-symbols-outlined">
+          thumb_down
+          </span>
+        </button>
+      </div>
   </div>
-  <div class="message-body">
-      {{ .Message }}
+  <div class="message-body" id="messageBody">
+      <div class="message-actual">{{ .Message }}</div>
+      <progress class="is-hidden progress is-medium is-info" max="100">45%</progress>
   </div>
+  <script type="module" defer src="js/herodotusMsg.js"></script>
 </article>

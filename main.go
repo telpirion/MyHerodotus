@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -22,6 +23,16 @@ type ClientError struct {
 	Message    string `json:"message" binding:"required"`
 	Email      string `json:"email" binding:"required"`
 	Credential string `json:"credential" binding:"required"`
+}
+
+type UserRating struct {
+	BotResponse string `json:"response" binding:"required"`
+	UserRating  string `json:"rating" binding:"required"`
+}
+
+type UserMessage struct {
+	Message string `json:"message" binding:"required"`
+	Model   string `json:"model" binding:"required"`
 }
 
 func main() {
@@ -47,6 +58,8 @@ func main() {
 	r.GET("/", login)
 	r.POST("/logClientError", clientError)
 	r.GET("/error", errPage)
+	r.POST("/rateResponse", rateResponse)
+
 	log.Fatal(r.Run(":8080"))
 }
 
@@ -80,21 +93,33 @@ func respondToUser(c *gin.Context) {
 
 	LogInfo("Respond to user request received")
 
-	// Parse Form
-	c.Request.ParseForm()
-	userMsg := c.Request.Form["userMsg"][0]
-	log.Println(userMsg)
+	// Parse data
+	var userMsg UserMessage
+	var botResponse string
+	err := c.BindJSON(&userMsg)
+	if err != nil {
+		LogError(fmt.Sprintf("Couldn't parse client message: %v\n", err))
+		c.JSON(http.StatusBadRequest, gin.H{
+			"Message": "Couldn't parse payload",
+		})
+		return
+	}
 
-	botResponse, err := textPredictGemini(userMsg, projectID)
+	if strings.ToLower(userMsg.Model) == "gemma" {
+		botResponse, err = textPredictGemma(userMsg.Message, projectID)
+	} else { // Gemini is default
+		botResponse, err = textPredictGemini(userMsg.Message, projectID)
+	}
 	if err != nil {
 		LogError(fmt.Sprintf("Bad response from Gemini  %v\n", err))
 		botResponse = "Oops! I had troubles understanding that ..."
 	}
 
 	convo := &ConversationBit{
-		UserQuery:   userMsg,
+		UserQuery:   userMsg.Message,
 		BotResponse: botResponse,
 		Created:     time.Now(),
+		Model:       userMsg.Model,
 	}
 
 	// Use a separate thread to store the conversation
@@ -105,7 +130,7 @@ func respondToUser(c *gin.Context) {
 		}
 	}()
 
-	c.HTML(http.StatusOK, "index.html", gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"Message": struct {
 			Message string
 			Email   string
@@ -138,4 +163,17 @@ func extractParams(c *gin.Context) string {
 		r.HandleContext(c)
 	}
 	return userEmail
+}
+
+func rateResponse(c *gin.Context) {
+	var userRating UserRating
+	err := c.BindJSON(&userRating)
+	if err != nil {
+		LogError(err.Error())
+		// Send error?
+	}
+
+	// TODO(telpirion): update Firestore
+
+	c.JSON(http.StatusOK, gin.H{"success": "rating logged"})
 }
