@@ -66,9 +66,13 @@ func TestSaveConversation(t *testing.T) {
 		BotResponse: "This is a bot response",
 		Created:     time.Now(),
 	}
-	err := saveConversation(*convo, email, _projectID)
+	id, err := saveConversation(*convo, email, _projectID)
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	if id == "" {
+		t.Error("Empty document ID")
 	}
 
 	nextConvo := &ConversationBit{
@@ -76,9 +80,12 @@ func TestSaveConversation(t *testing.T) {
 		BotResponse: "This is another fake bot response",
 		Created:     time.Now(),
 	}
-	err = saveConversation(*nextConvo, email, _projectID)
+	nextID, err := saveConversation(*nextConvo, email, _projectID)
 	if err != nil {
 		t.Fatalf("Error on adding next conversation: %v\n\n", err)
+	}
+	if nextID == "" {
+		t.Error("Empty second document ID")
 	}
 }
 
