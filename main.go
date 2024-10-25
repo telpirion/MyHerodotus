@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -16,6 +17,7 @@ var (
 	projectID      string
 	userEmail      string = "anonymous@example.com"
 	userEmailParam string = "user"
+	convoContext   string
 )
 
 type ClientError struct {
@@ -76,6 +78,29 @@ func startConversation(c *gin.Context) {
 
 	LogInfo("Start conversation request received")
 
+	// create a new conversation context
+	convoHistory, err := getConversation(userEmail, projectID)
+	if err != nil {
+		LogError(fmt.Sprintf("Couldn't get conversation history: %v\n", err))
+	}
+
+	// VertexAI + Gemini caching has a hard lower minimum; warn if the
+	// minimum isn't reached
+	convoContext, err = storeConversationContext(convoHistory, projectID)
+	var minConvoNum *MinCacheNotReachedError
+	if errors.As(err, &minConvoNum) {
+		LogWarning(err.Error())
+	} else if err != nil {
+		LogError(fmt.Sprintf("Couldn't store conversation context: %v\n", err))
+	}
+
+	// Populate the conversation context variable for grounding both Gemma and
+	// Gemini (< 33000 tokens) caching.
+	err = setConversationContext(convoHistory)
+	if err != nil {
+		LogError(fmt.Sprintf("Couldn't set conversation context: %v\n", err))
+	}
+
 	c.HTML(http.StatusOK, "index.html", gin.H{
 		"Message": struct {
 			Message string
@@ -127,11 +152,14 @@ func respondToUser(c *gin.Context) {
 		Prompt:      promptTemplate,
 	}
 
-	// Use a separate thread to store the conversation
+	// Store the conversation in Firestore and update the cachedContext
+	// This is dual-entry accounting so that we don't have to query Firestore
+	// every time to update the cached context
 	documentID, err := saveConversation(*convo, userEmail, projectID)
 	if err != nil {
 		LogError(fmt.Sprintf("Couldn't save conversation: %v\n", err))
 	}
+	cachedContext += fmt.Sprintf("### Human: %s\n### Assistant: %s\n", userMsg.Message, botResponse)
 
 	c.JSON(http.StatusOK, gin.H{
 		"Message": struct {

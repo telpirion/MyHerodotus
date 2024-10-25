@@ -16,3 +16,26 @@ func TestCreatePrompt(t *testing.T) {
 		t.Errorf("got: %v, want: %v", got, query)
 	}
 }
+
+func TestSetConversationContext(t *testing.T) {
+	convoHistory := []ConversationBit{
+		{
+			UserQuery:   "test user query",
+			BotResponse: "test bot response",
+		},
+		{
+			UserQuery:   "test user query 2",
+			BotResponse: "test bot response 2",
+		},
+	}
+	err := setConversationContext(convoHistory)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	got := cachedContext
+
+	if !strings.Contains(got, convoHistory[0].UserQuery) {
+		t.Errorf("got: %v, want: %v", cachedContext, convoHistory[0].UserQuery)
+	}
+}
