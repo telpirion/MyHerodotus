@@ -33,21 +33,21 @@ func _logInternal(fullMessage string, sev logging.Severity) {
 }
 
 func LogError(message string) {
-	fullMessage := fmt.Sprintf("error: \n%v\n", message)
+	fullMessage := fmt.Sprintf("error: %v\n", message)
 	_logInternal(fullMessage, logging.Error)
 }
 
 func LogInfo(message string) {
-	fullMessage := fmt.Sprintf("info: \n%v\n", message)
+	fullMessage := fmt.Sprintf("info: %v\n", message)
 	_logInternal(fullMessage, logging.Info)
 }
 
 func LogDebug(message string) {
-	fullMessage := fmt.Sprintf("debug: \n%v\n", message)
+	fullMessage := fmt.Sprintf("debug: %v\n", message)
 	_logInternal(fullMessage, logging.Debug)
 }
 
 func LogWarning(message string) {
-	fullMessage := fmt.Sprintf("warning: \n%v\n", message)
+	fullMessage := fmt.Sprintf("warning: %v\n", message)
 	_logInternal(fullMessage, logging.Warning)
 }

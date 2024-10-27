@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strings"
 	"text/template"
+	"time"
 
 	aiplatform "cloud.google.com/go/aiplatform/apiv1"
 	"cloud.google.com/go/aiplatform/apiv1/aiplatformpb"
@@ -18,15 +19,50 @@ import (
 )
 
 const (
-	GeminiTemplate = "templates/gemini.tmpl"
-	GemmaTemplate  = "templates/gemma.impl"
+	// Minimum token count to start caching is 32768; ~110 tokens per query/response ConversationBit
+	MinimumConversationNum = 400
+	GeminiTemplate         = "templates/gemini.2024.10.25.tmpl"
+	GemmaTemplate          = "templates/gemma.2024.10.25.tmpl"
+	GeminiModel            = "gemini-1.5-flash-001"
+	HistoryTemplate        = "templates/conversation_history.tmpl"
 )
 
+var cachedContext string = ""
+
+type MinCacheNotReachedError struct {
+	ConversationCount int
+}
+
+func (m *MinCacheNotReachedError) Error() string {
+	return fmt.Sprintf("minimum context cache sized not reached; have %d, need %d",
+		m.ConversationCount, MinimumConversationNum)
+}
+
+type promptInput struct {
+	Query   string
+	History string
+}
+
+// setConversationContext creates string out of past conversation between user and model.
+// This conversation history is used as grounding for the prompt template.
+func setConversationContext(convoHistory []ConversationBit) error {
+	tmp, err := template.ParseFiles(HistoryTemplate)
+	if err != nil {
+		return err
+	}
+
+	var buf bytes.Buffer
+	tmp.Execute(&buf, convoHistory)
+	cachedContext = buf.String()
+	return nil
+}
+
+// extractAnswer cleans up the response returned from the models
 func extractAnswer(response string) string {
 	// I am not a regex expert :/
-	re := regexp.MustCompile(`##RESPONSE##(?s)(.*)##ENDRESPONSE##`)
+	re := regexp.MustCompile(`### Assistant:(?s)(.*)##ENDRESPONSE##`)
 	botAnswer := string(re.Find([]byte(response)))
-	botAnswer = strings.Replace(botAnswer, "##RESPONSE##", "", 1)
+	botAnswer = strings.Replace(botAnswer, "### Assistant:", "", 1)
 	botAnswer = strings.Replace(botAnswer, "##ENDRESPONSE##", "", 1)
 	if botAnswer == "" {
 		botAnswer = response
@@ -34,13 +70,22 @@ func extractAnswer(response string) string {
 	return botAnswer
 }
 
+// createPrompt generates a new prompt based upon the stored prompt template.
 func createPrompt(message, templateName string) (string, error) {
 	tmp, err := template.ParseFiles(templateName)
 	if err != nil {
 		return "", nil
 	}
+
+	promptInputs := promptInput{
+		Query:   message,
+		History: cachedContext,
+	}
+
+	LogDebug(cachedContext)
+
 	var buf bytes.Buffer
-	err = tmp.ExecuteTemplate(&buf, "gemini.tmpl", struct{ Query string }{Query: message})
+	err = tmp.Execute(&buf, promptInputs)
 	if err != nil {
 		return "", err
 	}
@@ -64,7 +109,7 @@ func textPredictGemma(message, projectID string) (string, error) {
 
 	parameters := map[string]interface{}{}
 
-	prompt, err := createPrompt(message, GeminiTemplate)
+	prompt, err := createPrompt(message, GemmaTemplate)
 	if err != nil {
 		LogError(fmt.Sprintf("unable to create Gemma prompt: %v\n", err))
 		return "", err
@@ -101,7 +146,6 @@ func textPredictGemma(message, projectID string) (string, error) {
 func textPredictGemini(message, projectID string) (string, error) {
 	ctx := context.Background()
 	location := "us-west1"
-	model := "gemini-1.5-flash-001"
 
 	client, err := genai.NewClient(ctx, projectID, location)
 	if err != nil {
@@ -110,7 +154,11 @@ func textPredictGemini(message, projectID string) (string, error) {
 	}
 	defer client.Close()
 
-	llm := client.GenerativeModel(model)
+	llm := client.GenerativeModel(GeminiModel)
+	if convoContext != "" {
+		llm.CachedContentName = convoContext
+	}
+
 	prompt, err := createPrompt(message, GeminiTemplate)
 	if err != nil {
 		LogError(fmt.Sprintf("unable to create Gemini prompt: %v\n", err))
@@ -125,4 +173,49 @@ func textPredictGemini(message, projectID string) (string, error) {
 
 	candidate := resp.Candidates[0].Content.Parts[0].(genai.Text)
 	return extractAnswer(string(candidate)), nil
+}
+
+// storeConversationContext uploads past user conversations with the model into a Gen AI context.
+// This context is used when the model is answering questions from the user.
+func storeConversationContext(conversationHistory []ConversationBit, projectID string) (string, error) {
+	if len(conversationHistory) < MinimumConversationNum {
+		return "", &MinCacheNotReachedError{ConversationCount: len(conversationHistory)}
+	}
+
+	ctx := context.Background()
+	location := "us-west1"
+	client, err := genai.NewClient(ctx, projectID, location)
+	if err != nil {
+		return "", fmt.Errorf("unable to create client: %w", err)
+	}
+	defer client.Close()
+
+	var userParts []genai.Part
+	var modelParts []genai.Part
+	for _, p := range conversationHistory {
+		userParts = append(userParts, genai.Text(p.UserQuery))
+		modelParts = append(modelParts, genai.Text(p.BotResponse))
+	}
+
+	content := &genai.CachedContent{
+		Model:      GeminiModel,
+		Expiration: genai.ExpireTimeOrTTL{TTL: 60 * time.Minute},
+		Contents: []*genai.Content{
+			{
+				Role:  "user",
+				Parts: userParts,
+			},
+			{
+				Role:  "model",
+				Parts: modelParts,
+			},
+		},
+	}
+	result, err := client.CreateCachedContent(ctx, content)
+	if err != nil {
+		return "", fmt.Errorf("CreateCachedContent: %w", err)
+	}
+	resourceName := result.Name
+
+	return resourceName, nil
 }
