@@ -109,7 +109,7 @@ func textPredictGemma(message, projectID string) (string, error) {
 
 	parameters := map[string]interface{}{}
 
-	prompt, err := createPrompt(message, GeminiTemplate)
+	prompt, err := createPrompt(message, GemmaTemplate)
 	if err != nil {
 		LogError(fmt.Sprintf("unable to create Gemma prompt: %v\n", err))
 		return "", err
@@ -155,6 +155,10 @@ func textPredictGemini(message, projectID string) (string, error) {
 	defer client.Close()
 
 	llm := client.GenerativeModel(GeminiModel)
+	if convoContext != "" {
+		llm.CachedContentName = convoContext
+	}
+
 	prompt, err := createPrompt(message, GeminiTemplate)
 	if err != nil {
 		LogError(fmt.Sprintf("unable to create Gemini prompt: %v\n", err))

@@ -9,16 +9,19 @@
 
 For this week's activities, we must do the following:
 
-- [ ] Retrieve stored conversations with the user.
-- [ ] Set the user's past conversations as context with Vertex (Gemini).
-- [ ] Set the user's past conversations as context in template (Gemma).
-- [ ] Find data about how to fine tune Gemini, Gemma, or Gemma 2.
+- [x] Retrieve stored conversations with the user.
+- [x] Set the user's past conversations as context with Vertex (Gemini).
+- [x] Set the user's past conversations as context in template (Gemma).
+- [x] Find data about how to fine tune Gemini, Gemma, or Gemma 2.
 - [ ] Fine tune a Gemini, Gemma, or Gemma 2 model using the OpenAssistant
       guanaco dataset on HuggingFace.
 - [ ] Save the fine-tuned model to Model Registry, Model Garden, or HuggingFace.
 - [ ] Deploy the model to an endpoint.
 - [ ] Integrate the model into the web app.
 
+Nice-to-haves:
+
+- [ ] Create a toast UI element that informs the user when their response rating was received.
 
 ## Retrieving user context for models
 
@@ -41,16 +44,58 @@ Couldn't store conversation context: CreateCachedContent: rpc error: code = Inva
     available ... 
   - 🤔 I wonder ... is it assumed that the system instructions are included in that token amount?
 
++ 🤔 Storing the context as a RAG part of the prompt seems to be working okay for Gemini. I wonder what would happen if I
+  used Gemini outputs as context for the Gemma prompt? Do I need to filter out Gemma & Gemini context histories?
+ 
+  - 👎 Oof, the model failed with a cryptic `rpc error: code = Internal desc = {"error":"Incomplete generation","error_type":"Incomplete generation"}`
+    error. I honestly don't know how to debug that error...
+  - Looking in the logs, I see that there were TOO many new tokens for the Gemma model:
+
+    ```json
+  {"timestamp":"2024-10-25T22:35:49.174225Z","level":"ERROR","message":"`inputs` tokens + `max_new_tokens` must be <= 2048. Given: 4375 `inputs` tokens and 100 `max_new_tokens`","target":"text_generation_router::infer","filename":"router/src/infer/mod.rs","line_number":102,"span":{"name":"generate_stream"},"spans":[{"name":"vertex_compatibility"},{"name":"generate"},{"name":"generate_stream"}]}
+    ```
+  
+  - Looking into Go tokenizers ... it looks like `SentencePiece` is what Gemma uses, which has a C++ binary associated with it (?).
+    * https://github.com/eliben/go-sentencepiece
+    * go-sentence piece needs this file: https://github.com/google/gemma_pytorch/blob/main/tokenizer/tokenizer.model 
+    * https://github.com/google/sentencepiece
+  
+  - Other open source tokenizers:
+    * https://github.com/tiktoken-go/tokenizer (for OpenAI models)
+
+  - 🤔 Maybe we need to record the number of tokens in each ConversationBit, and then only collect the first 2000.
+    We might be able to use the Firestore aggregation filters to get this out-of-the-box.
+
 Sources:
 
 + https://go.dev/play/p/4rLkXhW570p
 + 👎 https://cloud.google.com/vertex-ai/generative-ai/docs/context-cache/context-cache-create
 + 👎 https://cloud.google.com/vertex-ai/generative-ai/docs/context-cache/context-cache-use
 + https://pkg.go.dev/errors#As 
-+ https://stackoverflow.com/questions/54156119/range-over-string-slice-in-golang-template 
++ https://stackoverflow.com/questions/54156119/range-over-string-slice-in-golang-template
++ https://ai.google.dev/gemma/docs/model_card_2  
 
-## Tuning a model
+## Creating a UI toast
+
++ Going to use CSS animations to show and hide the toast notification, using keyframes.
++ Getting the timing just right is the tough part, making sure that the notification shows
+  and then is hidden again.
 
 Sources:
 
++ https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_animations/Using_CSS_animations
++ 👎 https://stackoverflow.com/questions/16670931/hide-scroll-bar-but-while-still-being-able-to-scroll
+
+
+## Finding information about fine tuning
+
++ 😬 It looks like some of the versions of the Guanaco dataset aren't well supported. One version of the
+  dataset said that there could be some inappropriate content in the dataset.
++ Fine tuning seemingly is only documented for Python. It _should_ be possible in other languages
+  that the Vertex client library is available in.
+
+Sources:
+
++ https://cloud.google.com/vertex-ai/generative-ai/docs/models/gemini-use-supervised-tuning#python
 + https://huggingface.co/datasets/timdettmers/openassistant-guanaco
++ https://guanaco-model.github.io

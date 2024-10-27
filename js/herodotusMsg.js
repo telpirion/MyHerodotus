@@ -1,5 +1,7 @@
 window.addEventListener("load", function () {
 
+    const toast = document.querySelector('.notification');
+
     document.addEventListener("msg", () => {
         document.querySelector("progress").classList.toggle("is-hidden");
         document.querySelector(".message-actual").classList.toggle("is-hidden");
@@ -29,6 +31,12 @@ window.addEventListener("load", function () {
             })
             .then(data => {
                 console.log(data);
+                toast.classList.toggle("toast");
+                toast.classList.toggle("toast-hide");
+                this.setTimeout(()=>{
+                    toast.classList.toggle("toast-hide");
+                    toast.classList.toggle("toast");
+                }, 5000);
             })
         });
     });

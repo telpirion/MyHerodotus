@@ -81,7 +81,7 @@ func startConversation(c *gin.Context) {
 	// create a new conversation context
 	convoHistory, err := getConversation(userEmail, projectID)
 	if err != nil {
-		LogError(fmt.Sprintf("Couldn't get conversation history: %v\n", err))
+		LogError(fmt.Sprintf("couldn't get conversation history: %v\n", err))
 	}
 
 	// VertexAI + Gemini caching has a hard lower minimum; warn if the
@@ -91,14 +91,14 @@ func startConversation(c *gin.Context) {
 	if errors.As(err, &minConvoNum) {
 		LogWarning(err.Error())
 	} else if err != nil {
-		LogError(fmt.Sprintf("Couldn't store conversation context: %v\n", err))
+		LogError(fmt.Sprintf("couldn't store conversation context: %v\n", err))
 	}
 
 	// Populate the conversation context variable for grounding both Gemma and
 	// Gemini (< 33000 tokens) caching.
 	err = setConversationContext(convoHistory)
 	if err != nil {
-		LogError(fmt.Sprintf("Couldn't set conversation context: %v\n", err))
+		LogError(fmt.Sprintf("couldn't set conversation context: %v\n", err))
 	}
 
 	c.HTML(http.StatusOK, "index.html", gin.H{
@@ -125,7 +125,7 @@ func respondToUser(c *gin.Context) {
 	var promptTemplate string
 	err := c.BindJSON(&userMsg)
 	if err != nil {
-		LogError(fmt.Sprintf("Couldn't parse client message: %v\n", err))
+		LogError(fmt.Sprintf("couldn't parse client message: %v\n", err))
 		c.JSON(http.StatusBadRequest, gin.H{
 			"Message": "Couldn't parse payload",
 		})
@@ -140,7 +140,7 @@ func respondToUser(c *gin.Context) {
 		promptTemplate = GeminiTemplate
 	}
 	if err != nil {
-		LogError(fmt.Sprintf("Bad response from Gemini  %v\n", err))
+		LogError(fmt.Sprintf("bad response from %s: %v\n", userMsg.Model, err))
 		botResponse = "Oops! I had troubles understanding that ..."
 	}
 
