@@ -135,8 +135,8 @@ func respondToUser(c *gin.Context) {
 	if strings.ToLower(userMsg.Model) == "gemma" {
 		botResponse, err = textPredictGemma(userMsg.Message, projectID)
 		promptTemplate = GemmaTemplate
-	} else { // Gemini is default
-		botResponse, err = textPredictGemini(userMsg.Message, projectID)
+	} else { // Gemini is default, both tuned and OOTB
+		botResponse, err = textPredictGemini(userMsg.Message, projectID, strings.ToLower(userMsg.Model))
 		promptTemplate = GeminiTemplate
 	}
 	if err != nil {

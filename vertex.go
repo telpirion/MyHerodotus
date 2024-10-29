@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -82,8 +83,6 @@ func createPrompt(message, templateName string) (string, error) {
 		History: cachedContext,
 	}
 
-	LogDebug(cachedContext)
-
 	var buf bytes.Buffer
 	err = tmp.Execute(&buf, promptInputs)
 	if err != nil {
@@ -143,7 +142,7 @@ func textPredictGemma(message, projectID string) (string, error) {
 }
 
 // textPredictGemini generates text using a Gemini 1.5 Flash model
-func textPredictGemini(message, projectID string) (string, error) {
+func textPredictGemini(message, projectID, modelVersion string) (string, error) {
 	ctx := context.Background()
 	location := "us-west1"
 
@@ -154,7 +153,13 @@ func textPredictGemini(message, projectID string) (string, error) {
 	}
 	defer client.Close()
 
-	llm := client.GenerativeModel(GeminiModel)
+	modelName := GeminiModel
+	if modelVersion == "gemini-tuned" {
+		endpointID := os.Getenv("TUNED_MODEL_ENDPOINT_ID")
+		modelName = fmt.Sprintf("projects/%s/locations/%s/endpoints/%s", projectID, location, endpointID)
+	}
+	llm := client.GenerativeModel(modelName)
+
 	if convoContext != "" {
 		llm.CachedContentName = convoContext
 	}
@@ -171,8 +176,29 @@ func textPredictGemini(message, projectID string) (string, error) {
 		return "", err
 	}
 
-	candidate := resp.Candidates[0].Content.Parts[0].(genai.Text)
-	return extractAnswer(string(candidate)), nil
+	candidate, err := getCandidate(resp)
+	if err != nil {
+		LogError(err.Error())
+		return "I'm not sure how to answer that. Would you please repeat the question?", nil
+	}
+	return extractAnswer(candidate), nil
+}
+
+// getCandidate parses the response from the model.
+// It returns errors in cases where the response doesn't contain candidates
+// or the candidate's parts are empty.
+func getCandidate(resp *genai.GenerateContentResponse) (string, error) {
+	candidates := resp.Candidates
+	if len(candidates) == 0 {
+		return "", errors.New("no candidates returned from model")
+	}
+	firstCandidate := candidates[0]
+	parts := firstCandidate.Content.Parts
+	if len(parts) == 0 {
+		return "", errors.New("no parts in first candidate from model")
+	}
+	candidate := parts[0].(genai.Text)
+	return string(candidate), nil
 }
 
 // storeConversationContext uploads past user conversations with the model into a Gen AI context.
