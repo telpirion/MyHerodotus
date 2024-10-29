@@ -12,6 +12,7 @@ The local development environment must have the following variables:
 + COLLECTION_NAME : the Firestore Collection that contains user documents (conversations)
 + LOGGER_NAME : the name to use for Cloud Logging
 + CONFIGURATION_NAME : the name for this configuration, e.g. "HerodotusDev," "HerodotusStaging"
++ TUNED_MODEL_ENDPOINT_ID : pointing to the tuned Gemini model endpoint
 
 ## Build and run the Docker image
 
@@ -28,6 +29,8 @@ $ docker run -it --rm -p 8080:8080 --name myherodotus-running myherodotus
 To tag and upload a new Docker image to Artifact Registry, run the
 following commands. Be sure to set the `PROJECT_ID` and `SEMVER` environment
 variables.
+
+**Note**: Probably need a rebuild to remove PROJECT_ID env var. 
 
 ```sh
 $ docker tag myherodotus us-west1-docker.pkg.dev/${PROJECT_ID}/my-herodotus/base-image:${SEMVER}

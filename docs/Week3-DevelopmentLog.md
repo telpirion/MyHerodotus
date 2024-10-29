@@ -13,15 +13,20 @@ For this week's activities, we must do the following:
 - [x] Set the user's past conversations as context with Vertex (Gemini).
 - [x] Set the user's past conversations as context in template (Gemma).
 - [x] Find data about how to fine tune Gemini, Gemma, or Gemma 2.
-- [ ] Fine tune a Gemini, Gemma, or Gemma 2 model using the OpenAssistant
+- [x] Fine tune a Gemini, Gemma, or Gemma 2 model using the OpenAssistant
       guanaco dataset on HuggingFace.
-- [ ] Save the fine-tuned model to Model Registry, Model Garden, or HuggingFace.
-- [ ] Deploy the model to an endpoint.
-- [ ] Integrate the model into the web app.
+- [x] Create a notebook for managing data science tasks
+- [x] Save the fine-tuned model to Model Registry, Model Garden, or HuggingFace.
+- [x] Deploy the model to an endpoint.
+- [x] Integrate the model into the web app.
 
 Nice-to-haves:
 
-- [ ] Create a toast UI element that informs the user when their response rating was received.
+- [x] Create a toast UI element that informs the user when their response rating was received.
+- [ ] Refactor Docker file to accept env vars as argument.
+- [ ] Refactor frontend, backend into separate files.
+- [ ] Integrate token-counting into DB.
+
 
 ## Retrieving user context for models
 
@@ -68,6 +73,7 @@ Couldn't store conversation context: CreateCachedContent: rpc error: code = Inva
 
 Sources:
 
++ 👍 COUNT TOKENS! https://github.com/GoogleCloudPlatform/golang-samples/blob/main/vertexai/token-count/tokencount.go 
 + https://go.dev/play/p/4rLkXhW570p
 + 👎 https://cloud.google.com/vertex-ai/generative-ai/docs/context-cache/context-cache-create
 + 👎 https://cloud.google.com/vertex-ai/generative-ai/docs/context-cache/context-cache-use
@@ -93,9 +99,100 @@ Sources:
   dataset said that there could be some inappropriate content in the dataset.
 + Fine tuning seemingly is only documented for Python. It _should_ be possible in other languages
   that the Vertex client library is available in.
++ Going to try fine-tuning Gemini through the UI (Cloud Console).
++ 🤔 Why is it possible to upload a training set from my local machine but not the validation set?
++ 👎 Tuning the Gemini model, using the HuggingFace dataset, fails because the JSON file is in the
+  wrong format. The error message doesn't give me enough details about _how_ the file is in the
+  wrong format
++ 🤔 Is this a good dataset to use for fine-tuning? It has multiple languages ... which we don't have
+  as a requirement for our model. Why not use a dataset that is specific towards travel?
++ It looks like we need to set up an ETL pipeline first before the dataset is ready for tuning.
 
 Sources:
 
 + https://cloud.google.com/vertex-ai/generative-ai/docs/models/gemini-use-supervised-tuning#python
 + https://huggingface.co/datasets/timdettmers/openassistant-guanaco
 + https://guanaco-model.github.io
++ https://github.com/GoogleCloudPlatform/vertex-ai-samples/blob/main/notebooks/official/training/pytorch_gcs_data_training.ipynb
++ https://cloud.google.com/blog/topics/developers-practitioners/pytorch-google-cloud-how-train-and-tune-pytorch-models-vertex-ai
++ https://cloud.google.com/vertex-ai/generative-ai/docs/models/tune_gemini/text_tune
++ https://cloud.google.com/vertex-ai/generative-ai/docs/models/tune-models
++ https://pkg.go.dev/cloud.google.com/go/aiplatform@v1.68.0/apiv1/aiplatformpb#CreateCustomJobRequest 
++ Other datasets:
+  - https://huggingface.co/datasets/osunlp/TravelPlanner
+  - https://www.kaggle.com/datasets/niraliivaghani/chatbot-dataset
+  - https://huggingface.co/datasets/Binaryy/reddit-travel-qa?row=1
+  - https://huggingface.co/datasets/NLPC-UOM/Travel-Dataset-5000
+  - https://huggingface.co/datasets/Binaryy/travel_sample_extended
+  - https://huggingface.co/datasets/thari01/travel_data/viewer/default/train?p=1
+  - https://huggingface.co/datasets/soniawmeyer/travel-conversations-finetuning?row=0
+
+## Fine tune the Gemini model
+
++ It looks like I will need to transform the Guanaco dataset into a JSON structure that
+  Vertex will accept. I can probably write some simple Go scripts to do this, but it
+  will probably be easier to do in a Python notebook. (Also more true to real-life examples.)
++ I'm going to go with a Python notebook since it allows me to use the Vertex SDK with all its
+  extra features. I'll need to spin up a new notebook instance in my project.
++ 👎👎 I keep getting a `Missing permissions: storage.objects.get` error message when I attempt to
+  tune a Gemini model from a dataset file on GCS. I don't know which SA I need to grant the
+  role to. This is a hard blocker.
+  - I filed a bug against the docs for this: b/376106542
++ 👍 Looks like I've successfully trained a Gemini model!
+  - Note that I had to reject multiple entries in the Guanaco dataset since it didn't work for my
+    simple transform.
+
+Sources:
+
++ https://cloud.google.com/vertex-ai/generative-ai/docs/models/gemini-use-supervised-tuning#python
++ https://huggingface.co/datasets/timdettmers/openassistant-guanaco
++ https://python-jsonschema.readthedocs.io/en/latest/validate/
++ https://huggingface.co/docs/datasets/en/installation
++ https://json-schema.org/learn/miscellaneous-examples 
+
+## Fine tune the Gemma model
+
++ For the Gemma model, I'll need to create a custom training application and run it as
+  a job on Vertex AI's GAPIC layer (I think).
++ 👍👍 The Kaggle model card has an "Open on Vertex AI" button!! Gonna press it!
+  - So this just opens the Gemma model card in the Vertex Model Card, which is still pretty nifty.
+  - I see that there is a button to allow me to tune the Gemma model from a JSONL file stored
+    on GCS.
+  - Downloading the recommended file, I see that the dataset format is PEFT--yet another differet
+    JSON shape than either Guanaco or what Gemini requires.
++ 👍 I decided to open the fine tuning notebook for Gemma in Colab, which was remarkably easy to
+  do from the UI. Hopefully there is an option to look at the dataset or at least understand
+  the shape of the dataset.
++ According to this Colab, the dataset format for tuning Gemma IS the Guanaco dataset! Hmm.
++ Going to attempt to tune a Gemma 2 model using the linked Colab.
+
+Sources:
+
++ https://github.com/GoogleCloudPlatform/vertex-ai-samples/blob/main/notebooks/community/model_garden/model_garden_gemma2_finetuning_on_vertex.ipynb 
++ https://huggingface.co/google/gemma-2-27b-it-pytorch
++ https://www.kaggle.com/models/google/gemma-2
++ https://huggingface.co/blog/peft 
+
+## Call the tuned model
+
++ 👎 I have tried a couple of different ways to call my tuned model: the raw predict API, using the GenerativeModel() method in Go
+  Neither of them work!
+  - I think that the [Godoc for the `genai` package](https://pkg.go.dev/github.com/google/generative-ai-go/genai#Client.GenerativeModel)
+    is either wrong or misleading. The structure `tunedModels/NAME` where NAME is replaced by the tuned model's name, doesn't
+    work.
+  - The `NAME` of a tuned model is ambiguous. I'll try again, this time with the fully-qualified resource name.
+  - Setting the `NAME` to the resource name of the model fails: `tunedModels/projects/1025771077852/locations/us-west1/models/8135194174937890816@1`
+  - Setting the `NAME` to the resource name of the endpoint fails: `tunedModels/projects/1025771077852/locations/us-west1/endpoints/1926929312049528832`
+  - Setting the `NAME` to just the endpoint name PANICs because no candidates are returned: `projects/1025771077852/locations/us-west1/endpoints/1926929312049528832`
++ 👎👎 The Go libraries leave a lot to be desired.
+  - `ListModels()` method for v1 version of API
+  - Clearer Godoc
+  - Better error messages
++ 😬 The tuned model produces worse responses than the OOTB model:
+  - The tuned model often returns an empty response as its first response
+  - The tuned model ignores history context provided in prompt
+
+Sources:
+
++ 👎👎 https://pkg.go.dev/cloud.google.com/go/vertexai/genai#Client.GenerativeModel 
++ https://cloud.google.com/vertex-ai/docs/generative-ai/start/quickstarts/quickstart-multimodal
