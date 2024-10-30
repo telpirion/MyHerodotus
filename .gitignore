@@ -3,4 +3,4 @@
 .vscode
 
 # Firebase app config
-/js/appInit.js
+appInit.js

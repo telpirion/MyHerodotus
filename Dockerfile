@@ -19,7 +19,9 @@ RUN go mod download
 
 COPY . .
 
-COPY js ./js
+COPY site/js ./site/js
+COPY site/css ./site/css
+COPY site/html ./site/html
 COPY templates ./templates
 COPY favicon.ico ./favicon.ico
 

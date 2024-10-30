@@ -52,8 +52,9 @@ func main() {
 	LogInfo("Starting Herodotus...")
 
 	r = gin.Default()
-	r.LoadHTMLGlob("templates/*")
-	r.Static("/js", "./js")
+	r.LoadHTMLGlob("site/html/*")
+	r.Static("/js", "./site/js")
+	r.Static("/css", "./site/css")
 	r.StaticFile("/favicon.ico", "./favicon.ico")
 
 	r.GET("/home", startConversation)
@@ -102,13 +103,7 @@ func startConversation(c *gin.Context) {
 	}
 
 	c.HTML(http.StatusOK, "index.html", gin.H{
-		"Message": struct {
-			Message string
-			Email   string
-		}{
-			Message: "Hello! I hear that you want to go on a trip somewhere. Tell me about it.",
-			Email:   userEmail,
-		},
+		"Message": "Hello! I hear that you want to go on a trip somewhere. Tell me about it.",
 	})
 }
 
