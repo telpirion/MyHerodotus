@@ -1,5 +1,0 @@
-datasets
-pandas
-torch
-google-cloud-aiplatform
-google-cloud-storage
