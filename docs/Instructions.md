@@ -14,6 +14,9 @@ The local development environment must have the following variables:
 + CONFIGURATION_NAME : the name for this configuration, e.g. "HerodotusDev," "HerodotusStaging"
 + TUNED_MODEL_ENDPOINT_ID : pointing to the tuned Gemini model endpoint
 
+The site must also include a file, `appInit.js`, that contains the Firebase client
+configuration.
+
 ## Build and run the Docker image
 
 To build and run the Docker image in the local development environment, you must 
