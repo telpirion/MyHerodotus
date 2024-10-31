@@ -17,7 +17,7 @@ hosted on [Google Cloud][gcp]--in effect, your very own Herodotus.
 This project uses a [three-tier architecture][three-tier], with a simple web
 frontend, an application tier, and a data tier.
 
-![](architecture.png)
+![](docs/architecture.png)
 
 This project uses the following Google services:
 

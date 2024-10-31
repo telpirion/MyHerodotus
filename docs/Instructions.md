@@ -23,8 +23,15 @@ To build and run the Docker image in the local development environment, you must
 run the following commands:
 
 ```sh
-$ docker build . -t myherodotus -f Dockerfile
-$ docker run -it --rm -p 8080:8080 --name myherodotus-running myherodotus
+$ docker build . -t myherodotus -f Dockerfile --build-arg BUILD_VER=HerodotusStaging 
+$ docker run -e PROJECT_ID=$PROJECT_ID -it --rm -p 8080:8080 --name myherodotus-running myherodotus 
+```
+
+To inspect the env vars of a container while its running, run the following command.
+
+```sh
+$ docker ps # to get the ID of the running container
+$ docker inspect --format='{{.Config.Env}}' $CONTAINER_ID
 ```
 
 ## Upload a new Docker image to Artifact Registry
@@ -33,9 +40,8 @@ To tag and upload a new Docker image to Artifact Registry, run the
 following commands. Be sure to set the `PROJECT_ID` and `SEMVER` environment
 variables.
 
-**Note**: Probably need a rebuild to remove PROJECT_ID env var. 
-
 ```sh
+$ docker build . -t myherodotus -f Dockerfile --build-arg BUILD_VER=Herodotus
 $ docker tag myherodotus us-west1-docker.pkg.dev/${PROJECT_ID}/my-herodotus/base-image:${SEMVER}
 $ docker push us-west1-docker.pkg.dev/${PROJECT_ID}/my-herodotus/base-image:${SEMVER}
 ```
