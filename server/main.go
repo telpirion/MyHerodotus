@@ -52,9 +52,9 @@ func main() {
 	LogInfo("Starting Herodotus...")
 
 	r = gin.Default()
-	r.LoadHTMLGlob("site/html/*")
-	r.Static("/js", "./site/js")
-	r.Static("/css", "./site/css")
+	r.LoadHTMLGlob("../site/html/*")
+	r.Static("/js", "../site/js")
+	r.Static("/css", "../site/css")
 	r.StaticFile("/favicon.ico", "./favicon.ico")
 
 	r.GET("/home", startConversation)
