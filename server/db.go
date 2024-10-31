@@ -4,22 +4,20 @@ The data will be persisted in Firestore. The document structure will look like t
 
 Collection name: Herodotus
 
-Subcollection: user email address
-
-Documents
-+ User query
-+ Bot response
-+ Timestamp
+Subcollection: "Conversations"
 
 Herodotus [
 
 	{
-		email {
+		[EMAIL] {
 			Conversations: [
 				{
 					BotResponse: string
 					UserQuery: string
 					Created: timestamp
+					Model: string
+					Prompt: string
+					rating: string ("thumbUp" or "thumbDown")
 				}
 			]
 	  	}
@@ -52,6 +50,7 @@ type ConversationBit struct {
 	Model       string
 	Prompt      string
 	Created     time.Time
+	TokenCount  int32
 }
 
 type ConversationHistory struct {

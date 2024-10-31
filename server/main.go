@@ -139,12 +139,23 @@ func respondToUser(c *gin.Context) {
 		botResponse = "Oops! I had troubles understanding that ..."
 	}
 
+	botTokens, err := getTokenCount(botResponse)
+	if err != nil {
+		LogWarning(fmt.Sprintf("can't get bot token count: %v", err))
+	}
+
+	userTokens, err := getTokenCount(userMsg.Message)
+	if err != nil {
+		LogWarning(fmt.Sprintf("can't get bot token count: %v", err))
+	}
+
 	convo := &ConversationBit{
 		UserQuery:   userMsg.Message,
 		BotResponse: botResponse,
 		Created:     time.Now(),
 		Model:       userMsg.Model,
 		Prompt:      promptTemplate,
+		TokenCount:  botTokens + userTokens,
 	}
 
 	// Store the conversation in Firestore and update the cachedContext

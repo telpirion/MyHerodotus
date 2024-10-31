@@ -44,6 +44,26 @@ type promptInput struct {
 	History string
 }
 
+// getTokenCount uses the Gemini tokenizer to count the tokens in some text.
+func getTokenCount(text string) (int32, error) {
+	location := "us-west1"
+	ctx := context.Background()
+	client, err := genai.NewClient(ctx, projectID, location)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Close()
+
+	model := client.GenerativeModel(GeminiModel)
+
+	resp, err := model.CountTokens(ctx, genai.Text(text))
+	if err != nil {
+		return 0, err
+	}
+
+	return resp.TotalTokens, nil
+}
+
 // setConversationContext creates string out of past conversation between user and model.
 // This conversation history is used as grounding for the prompt template.
 func setConversationContext(convoHistory []ConversationBit) error {
