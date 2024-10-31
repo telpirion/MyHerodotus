@@ -22,4 +22,5 @@ jobs:
         go-version: '1.23.1'
 
     - name: Build
+      working-directory: ./server
       run: go build -v ./...
