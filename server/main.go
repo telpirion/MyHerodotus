@@ -18,6 +18,7 @@ var (
 	userEmail      string = "anonymous@example.com"
 	userEmailParam string = "user"
 	convoContext   string
+	contextTokens  int32
 )
 
 type ClientError struct {
@@ -95,6 +96,11 @@ func startConversation(c *gin.Context) {
 		LogError(fmt.Sprintf("couldn't store conversation context: %v\n", err))
 	}
 
+	contextTokens, err = getTokenCount(convoContext)
+	if err != nil {
+		LogWarning(fmt.Sprintf("couldn't get context token count: %v\n", err))
+	}
+
 	// Populate the conversation context variable for grounding both Gemma and
 	// Gemini (< 33000 tokens) caching.
 	err = setConversationContext(convoHistory)
@@ -117,7 +123,7 @@ func respondToUser(c *gin.Context) {
 	// Parse data
 	var userMsg UserMessage
 	var botResponse string
-	var promptTemplate string
+	var promptTemplateName string
 	err := c.BindJSON(&userMsg)
 	if err != nil {
 		LogError(fmt.Sprintf("couldn't parse client message: %v\n", err))
@@ -129,10 +135,10 @@ func respondToUser(c *gin.Context) {
 
 	if strings.ToLower(userMsg.Model) == "gemma" {
 		botResponse, err = textPredictGemma(userMsg.Message, projectID)
-		promptTemplate = GemmaTemplate
+		promptTemplateName = GemmaTemplate
 	} else { // Gemini is default, both tuned and OOTB
 		botResponse, err = textPredictGemini(userMsg.Message, projectID, strings.ToLower(userMsg.Model))
-		promptTemplate = GeminiTemplate
+		promptTemplateName = GeminiTemplate
 	}
 	if err != nil {
 		LogError(fmt.Sprintf("bad response from %s: %v\n", userMsg.Model, err))
@@ -154,7 +160,7 @@ func respondToUser(c *gin.Context) {
 		BotResponse: botResponse,
 		Created:     time.Now(),
 		Model:       userMsg.Model,
-		Prompt:      promptTemplate,
+		Prompt:      promptTemplateName,
 		TokenCount:  botTokens + userTokens,
 	}
 

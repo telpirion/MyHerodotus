@@ -21,11 +21,12 @@ import (
 
 const (
 	// Minimum token count to start caching is 32768; ~110 tokens per query/response ConversationBit
-	MinimumConversationNum = 400
-	GeminiTemplate         = "templates/gemini.2024.10.25.tmpl"
-	GemmaTemplate          = "templates/gemma.2024.10.25.tmpl"
-	GeminiModel            = "gemini-1.5-flash-001"
-	HistoryTemplate        = "templates/conversation_history.tmpl"
+	MinimumConversationNum       = 400
+	GeminiTemplate               = "templates/gemini.2024.10.25.tmpl"
+	GemmaTemplate                = "templates/gemma.2024.10.25.tmpl"
+	GeminiModel                  = "gemini-1.5-flash-001"
+	HistoryTemplate              = "templates/conversation_history.tmpl"
+	MaxGemmaTokens         int32 = 2048
 )
 
 var cachedContext string = ""
