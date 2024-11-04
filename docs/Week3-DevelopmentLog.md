@@ -23,9 +23,9 @@ For this week's activities, we must do the following:
 Nice-to-haves:
 
 - [x] Create a toast UI element that informs the user when their response rating was received.
-- [ ] Refactor Docker file to accept env vars as argument.
-- [ ] Refactor frontend, backend into separate files.
-- [ ] Integrate token-counting into DB.
+- [x] Refactor Docker file to accept env vars as argument.
+- [x] Refactor frontend, backend into separate files.
+- [x] Integrate token-counting into DB.
 
 
 ## Retrieving user context for models

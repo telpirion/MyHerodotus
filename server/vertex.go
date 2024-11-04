@@ -21,11 +21,12 @@ import (
 
 const (
 	// Minimum token count to start caching is 32768; ~110 tokens per query/response ConversationBit
-	MinimumConversationNum = 400
-	GeminiTemplate         = "templates/gemini.2024.10.25.tmpl"
-	GemmaTemplate          = "templates/gemma.2024.10.25.tmpl"
-	GeminiModel            = "gemini-1.5-flash-001"
-	HistoryTemplate        = "templates/conversation_history.tmpl"
+	MinimumConversationNum       = 400
+	GeminiTemplate               = "templates/gemini.2024.10.25.tmpl"
+	GemmaTemplate                = "templates/gemma.2024.10.25.tmpl"
+	GeminiModel                  = "gemini-1.5-flash-001"
+	HistoryTemplate              = "templates/conversation_history.tmpl"
+	MaxGemmaTokens         int32 = 2048
 )
 
 var cachedContext string = ""
@@ -42,6 +43,26 @@ func (m *MinCacheNotReachedError) Error() string {
 type promptInput struct {
 	Query   string
 	History string
+}
+
+// getTokenCount uses the Gemini tokenizer to count the tokens in some text.
+func getTokenCount(text string) (int32, error) {
+	location := "us-west1"
+	ctx := context.Background()
+	client, err := genai.NewClient(ctx, projectID, location)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Close()
+
+	model := client.GenerativeModel(GeminiModel)
+
+	resp, err := model.CountTokens(ctx, genai.Text(text))
+	if err != nil {
+		return 0, err
+	}
+
+	return resp.TotalTokens, nil
 }
 
 // setConversationContext creates string out of past conversation between user and model.
