@@ -17,6 +17,7 @@ Nice to haves:
 
 - [ ] Limit context passed to Gemma model based upon token count
 - [ ] Train Gemma model on Guanaco dataset
+- [ ] Upgrade ALL the things to Genkit
 
 ## Set up an evaluation pipeline
 
@@ -24,6 +25,12 @@ Nice to haves:
   technical overview.
 + In the quickstart, are "Fluency" and "Entertaining" both metrics that are pre-defined?
   Or can these metrics be any arbitrary measurement provided that they have a explanation?
++ 👎👎 Quickstart doesn't give an example of a correct experiment name!!
+  [here](https://cloud.google.com/vertex-ai/generative-ai/docs/models/evaluation-quickstart#import_libraries).
+  - Filed a bug: b/376756582
++ It would be nice to have some examples of commonly-used metrics for Gen AI models -- plus how to 
+  potentially define them when setting up the result.
++ Additional notes collected in notebook.
 
 Sources:
 
