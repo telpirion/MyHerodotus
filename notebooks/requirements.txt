@@ -5,3 +5,7 @@ google-cloud-aiplatform
 google-cloud-storage
 torch
 certifi
+torch
+certifi
+torch
+certifi
