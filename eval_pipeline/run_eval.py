@@ -94,24 +94,36 @@ def get_metrics() -> List[any]:
     The AI is a helpful travel guide. Please provide 3 to 5 destination suggestions.
     '''
 
-    prompteng_metrics = PointwiseMetric(
-        metric="prompteng_metrics",
+    closed_domain = PointwiseMetric(
+        metric="closed_domain",
         metric_prompt_template=PointwiseMetricPromptTemplate(
             criteria={
-                "open_domain": open_domain,
                 "closed_domain": closed_domain,
             },
             rating_rubric={
-                "1": "The response performs well on both criteria.",
-                "0.5": "The response performs well on one but not the other criteria.",
-                "0": "The response falls short on both criteria",
+                "1": "The response performs well on the criteria.",
+                "0": "The response performs poorly on the criteria",
+            },
+        ),
+    )
+
+    open_domain = PointwiseMetric(
+        metric="open_domain",
+        metric_prompt_template=PointwiseMetricPromptTemplate(
+            criteria={
+                "open_domain": open_domain,
+            },
+            rating_rubric={
+                "1": "The response performs well on the criteria.",
+                "0": "The response performs poorly on the criteria",
             },
         ),
     )
 
     rouge = Rouge(rouge_type="rouge1")
     metrics = [
-        prompteng_metrics,
+        closed_domain,
+        open_domain,
         rouge,
         MetricPromptTemplateExamples.Pointwise.GROUNDEDNESS,
         MetricPromptTemplateExamples.Pointwise.COHERENCE,
