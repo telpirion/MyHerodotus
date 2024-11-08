@@ -45,3 +45,23 @@ $ docker build . -t myherodotus -f Dockerfile --build-arg BUILD_VER=Herodotus
 $ docker tag myherodotus us-west1-docker.pkg.dev/${PROJECT_ID}/my-herodotus/base-image:${SEMVER}
 $ docker push us-west1-docker.pkg.dev/${PROJECT_ID}/my-herodotus/base-image:${SEMVER}
 ```
+
+## Clear space on Cloud Shell
+
+1. Get the usage of local files.
+
+```sh
+$ du -hs $(ls -A)
+```
+
+2. Clean the Go cache.
+
+```sh
+$ go clean --cache
+```
+
+3. Prune the system.
+
+```sh
+$ docker system prune
+```
