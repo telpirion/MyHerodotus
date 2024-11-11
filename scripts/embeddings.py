@@ -1,4 +1,4 @@
-from typings import Mappable
+from typing import Mapping
 
 import os
 
@@ -28,7 +28,7 @@ class NGramLanguageModeler(nn.Module):
 
 
 def create_embeddings(ngrams: List[any],
-                      word_to_ix: Mappable[str, any],
+                      word_to_ix: Mapping[str, any],
                       vocab: Set[any],
                       epochs: int = 2) -> NGramLanguageModeler:
     losses = []
@@ -102,4 +102,5 @@ def main():
 
 
 if __name__ == "__main__":
+    print("start embeddings creation")
     main()

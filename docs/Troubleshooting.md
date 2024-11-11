@@ -4,31 +4,38 @@
 
 1. Get the usage of local files.
 
-```sh
-$ df -h
-$ du -hs $(ls -A)
-```
+    ```sh
+    $ df -h
+    $ du -hs $(ls -A)
+    ```
 
-2. Clean the Go cache.
+1. Clean pip cache.
 
-```sh
-$ go clean --cache
-```
+    ```sh
+    $ pip cache purge
+    ```
 
-3. Prune the system (Docker).
+1. Clean the Go cache.
 
-```sh
-$ docker system prune
-```
+    ```sh
+    $ go clean --modcache
+    $ go clean --cache
+    ```
 
-4. Run Git garbage collection
+1. Prune the system (Docker).
 
-```sh
-$ git gc
-```
+    ```sh
+    $ docker system prune
+    ```
 
-5. Delete npm
+1. Run Git garbage collection
 
-```sh
-$ rm -rfd .npm
-```
+    ```sh
+    $ git gc
+    ```
+
+1. Delete npm.
+
+    ```sh
+    $ rm -rfd .npm
+    ```
