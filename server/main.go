@@ -126,9 +126,10 @@ func respondToUser(c *gin.Context) {
 	var promptTemplateName string
 	err := c.BindJSON(&userMsg)
 	if err != nil {
-		LogError(fmt.Sprintf("couldn't parse client message: %v\n", err))
+		responseMsg := fmt.Sprintf("couldn't parse client message: %v\n", err)
+		LogError(responseMsg)
 		c.JSON(http.StatusBadRequest, gin.H{
-			"Message": "Couldn't parse payload",
+			"Message": responseMsg,
 		})
 		return
 	}
@@ -145,32 +146,12 @@ func respondToUser(c *gin.Context) {
 		botResponse = "Oops! I had troubles understanding that ..."
 	}
 
-	botTokens, err := getTokenCount(botResponse)
+	// Store data in Firestore
+	documentID, err := updateDatabase(projectID, userMsg.Message, userMsg.Model, promptTemplateName, botResponse)
 	if err != nil {
-		LogWarning(fmt.Sprintf("can't get bot token count: %v", err))
+		LogError(err.Error())
 	}
 
-	userTokens, err := getTokenCount(userMsg.Message)
-	if err != nil {
-		LogWarning(fmt.Sprintf("can't get bot token count: %v", err))
-	}
-
-	convo := &ConversationBit{
-		UserQuery:   userMsg.Message,
-		BotResponse: botResponse,
-		Created:     time.Now(),
-		Model:       userMsg.Model,
-		Prompt:      promptTemplateName,
-		TokenCount:  botTokens + userTokens,
-	}
-
-	// Store the conversation in Firestore and update the cachedContext
-	// This is dual-entry accounting so that we don't have to query Firestore
-	// every time to update the cached context
-	documentID, err := saveConversation(*convo, userEmail, projectID)
-	if err != nil {
-		LogError(fmt.Sprintf("Couldn't save conversation: %v\n", err))
-	}
 	cachedContext += fmt.Sprintf("### Human: %s\n### Assistant: %s\n", userMsg.Message, botResponse)
 
 	c.JSON(http.StatusOK, gin.H{
@@ -184,6 +165,49 @@ func respondToUser(c *gin.Context) {
 			DocumentID: documentID,
 		},
 	})
+}
+
+func updateDatabase(projectID, userMessage, modelName, promptTemplateName, botResponse string) (string, error) {
+	// Remove PII from message
+	cleanMsg, err := deidentify(projectID, userMessage)
+	if err != nil {
+		return "", fmt.Errorf("couldn't deidentify user message: %v", err)
+	}
+
+	// Remove any sensitive data from botResponse.
+	botResponse, err = deidentify(projectID, botResponse)
+	if err != nil {
+		return "", fmt.Errorf("couldn't deidentify bot response: %v", err)
+	}
+
+	// Get the number of tokens in the user message and response
+	botTokens, err := getTokenCount(botResponse)
+	if err != nil {
+		return "", fmt.Errorf("can't get bot token count: %v", err)
+	}
+
+	userTokens, err := getTokenCount(cleanMsg)
+	if err != nil {
+		return "", fmt.Errorf("can't get bot token count: %v", err)
+	}
+
+	convo := &ConversationBit{
+		UserQuery:   cleanMsg,
+		BotResponse: botResponse,
+		Created:     time.Now(),
+		Model:       modelName,
+		Prompt:      promptTemplateName,
+		TokenCount:  botTokens + userTokens,
+	}
+
+	// Store the conversation in Firestore and update the cachedContext
+	// This is dual-entry accounting so that we don't have to query Firestore
+	// every time to update the cached context
+	documentID, err := saveConversation(*convo, userEmail, projectID)
+	if err != nil {
+		return "", fmt.Errorf("couldn't save conversation: %v", err)
+	}
+	return documentID, nil
 }
 
 func errPage(c *gin.Context) {
