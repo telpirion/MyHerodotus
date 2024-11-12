@@ -78,11 +78,11 @@ func startConversation(c *gin.Context) {
 	writeTimeSeriesValue(projectID, "Start of conversation")
 	// extractParams will redirect if user isn't logged in.
 	userEmail = extractParams(c)
-	encryptedEmail = transformEmail(userEmail) //userEmail
+	encryptedEmail = userEmail
 
-	// if os.Getenv("CONFIGURATION_NAME") != "HerodotusDev" {
-	// 	encryptedEmail = transformEmail(userEmail)
-	// }
+	if os.Getenv("CONFIGURATION_NAME") != "HerodotusDev" {
+		encryptedEmail = transformEmail(userEmail)
+	}
 
 	LogInfo("Start conversation request received")
 
