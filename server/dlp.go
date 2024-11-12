@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/sha256"
 	"fmt"
 
 	dlp "cloud.google.com/go/dlp/apiv2"
@@ -66,4 +67,14 @@ func deidentify(projectID, item string) (string, error) {
 	}
 
 	return resp.GetItem().GetValue(), nil
+}
+
+// transformEmail encrypts a string using a SHA256 hash.
+// This is for deidentification of email addresses used as keys in the
+// production database.
+func transformEmail(email string) string {
+	sha := sha256.New()
+	sha.Write([]byte(email))
+	encryptedEmail := fmt.Sprintf("%x", sha.Sum(nil))
+	return encryptedEmail
 }
