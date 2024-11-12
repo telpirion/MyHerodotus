@@ -6,3 +6,4 @@ google-cloud-bigquery
 bigframes
 pandas-io
 pandas-gbq
+torch
