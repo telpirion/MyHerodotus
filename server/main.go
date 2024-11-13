@@ -16,6 +16,7 @@ var (
 	r              *gin.Engine
 	projectID      string
 	userEmail      string = "anonymous@example.com"
+	encryptedEmail string
 	userEmailParam string = "user"
 	convoContext   string
 	contextTokens  int32
@@ -77,11 +78,16 @@ func startConversation(c *gin.Context) {
 	writeTimeSeriesValue(projectID, "Start of conversation")
 	// extractParams will redirect if user isn't logged in.
 	userEmail = extractParams(c)
+	encryptedEmail = userEmail
+
+	if os.Getenv("CONFIGURATION_NAME") != "HerodotusDev" {
+		encryptedEmail = transformEmail(userEmail)
+	}
 
 	LogInfo("Start conversation request received")
 
 	// create a new conversation context
-	convoHistory, err := getConversation(userEmail, projectID)
+	convoHistory, err := getConversation(encryptedEmail, projectID)
 	if err != nil {
 		LogError(fmt.Sprintf("couldn't get conversation history: %v\n", err))
 	}
@@ -203,7 +209,7 @@ func updateDatabase(projectID, userMessage, modelName, promptTemplateName, botRe
 	// Store the conversation in Firestore and update the cachedContext
 	// This is dual-entry accounting so that we don't have to query Firestore
 	// every time to update the cached context
-	documentID, err := saveConversation(*convo, userEmail, projectID)
+	documentID, err := saveConversation(*convo, encryptedEmail, projectID)
 	if err != nil {
 		return "", fmt.Errorf("couldn't save conversation: %v", err)
 	}
