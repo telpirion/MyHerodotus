@@ -70,4 +70,35 @@ $ docker build . -t evaluations -f Dockerfile
 $ docker run -e PROJECT_ID=$PROJECT_ID -e DATASET_NAME=$DATASET_NAME -it --rm --name evaluations-running evaluations 
 ```
 
+## Embeddings
+
+The [embeddings](../services/embeddings/) microservice uses [PyTorch][pytorch] to
+generate custom embeddings from a specified text, in this case the _Histories_ by
+Herodotus.
+
+This service can be run either as a Vertex AI job or as a Cloud Run job.
+
+**TIP**: To list the available PyTorch learning containers, run the following command:
+
+```sh
+$ gcloud compute images list --project deeplearning-platform-release | grep pytorch
+```
+
+### Run the job locally
+
+1. Set the following environment variables.
+
+  + `PROJECT_ID`
+  + `BUCKET_NAME`
+  + `OUTPUT_PATH` (optional)
+
+1. From the root of the embeddings microservice, run the following commands.
+
+    ```sh
+    $ ./build.sh
+    $ docker run -e PROJECT_ID=$PROJECT_ID -e BUCKET_NAME=$BUCKET_NAME -it --rm --name embeddings-running embeddings 
+    ```
+
+
 [jobs]: https://cloud.google.com/run/docs/create-jobs
+[pytorch]: https://pytorch.org/

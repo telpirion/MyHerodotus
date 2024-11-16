@@ -1,9 +1,2 @@
-functions-framework==3.*
-pandas
-google-cloud-aiplatform
-google-cloud-aiplatform[evaluation]
-google-cloud-bigquery
-bigframes
-pandas-io
-pandas-gbq
+google-cloud-storage
 torch
