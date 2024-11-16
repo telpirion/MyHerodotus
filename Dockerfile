@@ -1,7 +1,5 @@
 FROM golang:1.23 AS build
 
-# Avoid dynamic linking of libc, since we are using a different deployment image
-# that might have a different version of libc.
 ARG BUILD_VER=HerodotusStaging
 
 ENV CGO_ENABLED=0

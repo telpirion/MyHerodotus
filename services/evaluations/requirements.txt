@@ -1,0 +1,7 @@
+bigframes
+functions-framework
+google-cloud-aiplatform[evaluation]
+google-cloud-bigquery
+pandas
+pandas-io
+pandas-gbq

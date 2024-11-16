@@ -1,7 +1,7 @@
-# Services
+# Services: Instructions
 
 The MyHerodotus app has several microservices running behind the scenes to assist
-with data collection, evaluation, and model tuning.
+with data collection, evaluation, model tuning, and creating embeddings.
 
 ## Data collection
 
@@ -51,3 +51,23 @@ $ gcloud functions deploy data-collection \
 + https://cloud.google.com/eventarc/docs/reference/supported-events#cloud-firestore
 + https://cloud.google.com/bigquery/docs/loading-data-cloud-firestore#python
 + https://cloud.google.com/firestore/docs/manage-data/export-import#gcloud
+
+
+## Evaluations
+
+The [evaluations](../services/evaluations/) microservice runs as a job on [Cloud Run][jobs].
+The microservice, written in Python (to make use of data science libraries), is packaged as a
+container image, uploaded to Artifact Registry, and then executed as a job.
+
+### Run the job locally
+
+From the root of the evaluations microservice, run the following commands to build and run
+the evaluation microservice. Be sure to set the `PROJECT_ID` and `DATASET_NAME` environment variables
+before running this service.
+
+```sh
+$ docker build . -t evaluations -f Dockerfile
+$ docker run -e PROJECT_ID=$PROJECT_ID -e DATASET_NAME=$DATASET_NAME -it --rm --name evaluations-running evaluations 
+```
+
+[jobs]: https://cloud.google.com/run/docs/create-jobs

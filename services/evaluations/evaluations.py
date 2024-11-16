@@ -1,7 +1,5 @@
 from typing import List
 
-import functions_framework
-
 import os
 import logging
 import traceback
@@ -17,27 +15,17 @@ import vertexai
 from vertexai.generative_models import GenerativeModel
 from vertexai.evaluation import EvalTask, Rouge, PointwiseMetric, PointwiseMetricPromptTemplate, MetricPromptTemplateExamples
 
-@functions_framework.http
-def entrypoint(request):
-    """HTTP Cloud Function.
-    Args:
-        request (flask.Request): The request object.
-        <https://flask.palletsprojects.com/en/1.1.x/api/#incoming-request-data>
-    Returns:
-        The response text, or any set of values that can be turned into a
-        Response object using `make_response`
-        <https://flask.palletsprojects.com/en/1.1.x/api/#flask.make_response>.
-    """
-    main()
-    
+
 def main():
     logger = logging.getLogger(__name__)
     project_id = os.getenv('PROJECT_ID')
+    dataset_name = os.getenv('DATASET_NAME')
     location = "us-west1"
     tb = "no error"
 
+    vertexai.init(project=project_id, location=location)
     try:
-        golden_dataset = get_goldens()
+        golden_dataset = get_goldens(project_id=project_id, dataset_name=dataset_name)
         metrics = get_metrics()
         timestamp = datetime.utcnow()
         timestamp_str = timestamp.isoformat(timespec='hours')
@@ -58,7 +46,7 @@ def main():
             logger.info(f"{model_name} eval started")
 
             results_df = run_eval(model_id=model_id, eval_dataset=golden_dataset, metrics=metrics)
-            table_name = f"{project_id}.myherodotus.{model_name}dd{timestamp_str}"
+            table_name = f"{project_id}.{dataset_name}.{model_name}dd{timestamp_str}"
 
             store_results(results_df, table_name, project_id)
             logger.info(f"{model_name} results written to log")
@@ -68,12 +56,11 @@ def main():
         tb = traceback.format_exc()
     finally:
         logger.error(tb)
+
     
-    
-def get_goldens() -> pd.DataFrame:
-    project_id = os.getenv('PROJECT_ID')
+def get_goldens(project_id: str, dataset_name: str) -> pd.DataFrame:
     bq_client = bigquery.Client(project_id)
-    goldens_table_name = f"{project_id}.myherodotus.goldens20241104"
+    goldens_table_name = f"{project_id}.{dataset_name}.goldens20241104"
     sql = f"""
     SELECT prompt, reference
     FROM {goldens_table_name}
@@ -81,6 +68,7 @@ def get_goldens() -> pd.DataFrame:
 
     golden_dataset = bq_client.query_and_wait(sql).to_dataframe()
     return golden_dataset
+
 
 def get_metrics() -> List[any]:
     # My set of metrics
