@@ -26,6 +26,9 @@ $ gcloud firestore export gs://myherodotus --database=l200 --collection-ids=Hero
 To deploy the `data-collection` function to Cloud Run, run the following command from the
 `data-collection/` directory. Be sure to set the project ID using `gcloud config set project`.
 
+**IMPORTANT**: Make sure that `$PROJECT_ID` and `$DATASET_NAME` env vars are set before deploying
+the function!
+
 ```sh
 $ gcloud functions deploy data-collection \
   --gen2 \
@@ -34,6 +37,7 @@ $ gcloud functions deploy data-collection \
   --trigger-location="us-west1" \
   --source=. \
   --entry-point=CollectData \
+  --set-env-vars PROJECT_ID=${PROJECT_ID},DATASET_NAME=${DATASET_NAME},BUILD_VER=Herodotus \
   --trigger-event-filters="type=google.cloud.firestore.document.v1.updated" \
   --trigger-event-filters="database=l200" \
   --trigger-event-filters-path-pattern=document='Herodotus/{userId}/Conversations/{conversationId}'

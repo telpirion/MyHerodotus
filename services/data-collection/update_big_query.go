@@ -9,7 +9,7 @@ import (
 
 	"github.com/GoogleCloudPlatform/functions-framework-go/functions"
 	"github.com/cloudevents/sdk-go/v2/event"
-	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 
 	"cloud.google.com/go/bigquery"
 	"cloud.google.com/go/firestore"
@@ -18,8 +18,8 @@ import (
 
 var (
 	projectID      = ""
-	datasetName    = ""             // Pass in as env var
-	collectionName = "HerodotusDev" // Pass in as env var
+	datasetName    = "" // Pass in as env var
+	collectionName = "" // Pass in as env var
 )
 
 const (
@@ -45,11 +45,11 @@ func collectData(ctx context.Context, e event.Event) error {
 	collectionName = os.Getenv("BUILD_VER")
 
 	var data firestoredata.DocumentEventData
-	options := protojson.UnmarshalOptions{
+	options := proto.UnmarshalOptions{
 		DiscardUnknown: true,
 	}
 	if err := options.Unmarshal(e.Data(), &data); err != nil {
-		log.Fatalf("protojson.Unmarshal: %v", err)
+		log.Fatalf("proto.Unmarshal: %v", err)
 		return err
 	}
 
@@ -73,6 +73,7 @@ func collectData(ctx context.Context, e event.Event) error {
 		return nil
 	}
 
+	log.Println("data collection complete!")
 	return nil
 }
 
