@@ -5,7 +5,7 @@ with data collection, evaluation, and model tuning.
 
 ## Data collection
 
-The [Firestore-to-BigQuery](../services/firestore-to-bigquery/) service updates a
+The [Firestore-to-BigQuery](../services/data-collection/) service updates a
 BigQuery table with user data and responses from the MyHerodotus app. The service
 is triggered by a specific event: when a document is updated in the Firestore database.
 This event is used for data collection because it only occurs when a user has rated
@@ -23,9 +23,25 @@ $ gcloud firestore export gs://myherodotus --database=l200 --collection-ids=Hero
 
 ### Deploy the service to Cloud functions
 
+To deploy the `data-collection` function to Cloud Run, run the following command from the
+`data-collection/` directory. Be sure to set the project ID using `gcloud config set project`.
+
+```sh
+$ gcloud functions deploy data-collection \
+  --gen2 \
+  --runtime=go121 \
+  --region="us-west1" \
+  --trigger-location="us-west1" \
+  --source=. \
+  --entry-point=CollectData \
+  --trigger-event-filters="type=google.cloud.firestore.document.v1.updated" \
+  --trigger-event-filters="database=l200" \
+  --trigger-event-filters-path-pattern=document='Herodotus/{userId}/Conversations/{conversationId}'
+```
 
 ### Sources
 
++ https://cloud.google.com/functions/docs/calling/cloud-firestore
 + https://cloud.google.com/functions/docs/tutorials/storage
 + https://cloud.google.com/functions/docs/calling/eventarc
 + https://cloud.google.com/eventarc/docs/reference/supported-events#cloud-firestore

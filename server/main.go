@@ -200,7 +200,7 @@ func updateDatabase(projectID, userMessage, modelName, promptTemplateName, botRe
 	convo := &ConversationBit{
 		UserQuery:   cleanMsg,
 		BotResponse: botResponse,
-		Created:     time.Now(),
+		Created:     time.Now().Unix(),
 		Model:       modelName,
 		Prompt:      promptTemplateName,
 		TokenCount:  botTokens + userTokens,

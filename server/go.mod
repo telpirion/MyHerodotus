@@ -5,6 +5,7 @@ go 1.23.0
 toolchain go1.23.2
 
 require (
+	cloud.google.com/go/dlp v1.20.0
 	cloud.google.com/go/firestore v1.17.0
 	cloud.google.com/go/logging v1.12.0
 	cloud.google.com/go/monitoring v1.21.1
@@ -14,10 +15,7 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.7.4
 )
 
-require (
-	cloud.google.com/go/dlp v1.20.0 // indirect
-	cloud.google.com/go/longrunning v0.6.1 // indirect
-)
+require cloud.google.com/go/longrunning v0.6.1 // indirect
 
 require (
 	cloud.google.com/go v0.116.0 // indirect
@@ -71,7 +69,7 @@ require (
 	google.golang.org/genproto v0.0.0-20241015192408-796eee8c2d53 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20241007155032-5fefd90f89a9
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20241015192408-796eee8c2d53 // indirect
-	google.golang.org/grpc v1.67.1
+	google.golang.org/grpc v1.67.1 // indirect
 	google.golang.org/protobuf v1.35.1
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

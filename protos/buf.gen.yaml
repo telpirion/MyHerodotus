@@ -1,0 +1,18 @@
+version: v2
+managed:
+  enabled: false
+  #override:
+  #    - file_option: go_package_prefix
+  #      path: conversation.proto
+  #      value: myherodotus.com/datacollection
+plugins:
+  - remote: buf.build/protocolbuffers/go
+    out: ../server
+    opt:
+    - module=myherodotus.com/main
+  - remote: buf.build/protocolbuffers/go
+    out: ../services/data-collection
+    opt:
+    - module=myherodotus.com/datacollection
+inputs:
+  - directory: .
