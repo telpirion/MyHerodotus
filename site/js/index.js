@@ -61,6 +61,10 @@ function processRating(e) {
             toast.classList.toggle("toast-hide");
             toast.classList.toggle("toast");
         }, 5000);
+    })
+    .catch(e => {
+        console.log(`error: ${e}`);
+        alert(e);
     });
 }
 
@@ -104,12 +108,21 @@ function processForm(e) {
         console.log(data);
         const response = data.Message.Message;
         const botMessage = document.querySelector(".message-actual")
-        botMessage.textContent = response;
+        botMessage.innerHTML = convertMDtoHTML(response);
         botMessage.dataset.document = data.Message.DocumentID;
 
         // Toggle visibility
         const evt = new Event("msg");
         document.dispatchEvent(evt);
     })
+    .catch(e => {
+        console.log(`error: ${e}`);
+        alert(e);
+    });
     return true;
+}
+
+function convertMDtoHTML(markdown) {
+    const rawHTML = marked.parse(markdown);
+    return DOMPurify.sanitize(rawHTML);
 }

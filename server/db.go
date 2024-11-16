@@ -31,7 +31,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"time"
 
 	"cloud.google.com/go/firestore"
 	"google.golang.org/api/iterator"
@@ -44,15 +43,16 @@ const (
 
 var CollectionName string = "HerodotusDev"
 
-type ConversationBit struct {
-	BotResponse string
-	UserQuery   string
-	Model       string
-	Prompt      string
-	Created     time.Time
-	TokenCount  int32
-}
-
+/*
+	type ConversationBit struct {
+		BotResponse string
+		UserQuery   string
+		Model       string
+		Prompt      string
+		Created     time.Time
+		TokenCount  int32
+	}
+*/
 type ConversationHistory struct {
 	UserEmail     string
 	Conversations []ConversationBit
@@ -98,8 +98,8 @@ func updateConversation(documentId, userEmail, rating, projectID string) error {
 
 	docRef := client.Collection(CollectionName).Doc(userEmail).Collection(SubCollectionName).Doc(documentId)
 	docRef.Set(ctx, map[string]interface{}{
-		"rating": rating,
-	}, firestore.Merge(firestore.FieldPath{"rating"}))
+		"Rating": rating,
+	}, firestore.Merge(firestore.FieldPath{"Rating"}))
 
 	return nil
 }

@@ -41,6 +41,11 @@ type UserMessage struct {
 }
 
 func main() {
+	defer func() {
+		if r := recover(); r != nil {
+			LogError(fmt.Sprintf("Error: %v", r))
+		}
+	}()
 
 	projectID = os.Getenv("PROJECT_ID")
 	if _loggerName, ok := os.LookupEnv("LOGGER_NAME"); ok {
@@ -132,7 +137,7 @@ func respondToUser(c *gin.Context) {
 	var promptTemplateName string
 	err := c.BindJSON(&userMsg)
 	if err != nil {
-		responseMsg := fmt.Sprintf("couldn't parse client message: %v\n", err)
+		responseMsg := fmt.Sprintf("could not parse client message: %v\n", err)
 		LogError(responseMsg)
 		c.JSON(http.StatusBadRequest, gin.H{
 			"Message": responseMsg,
@@ -200,7 +205,7 @@ func updateDatabase(projectID, userMessage, modelName, promptTemplateName, botRe
 	convo := &ConversationBit{
 		UserQuery:   cleanMsg,
 		BotResponse: botResponse,
-		Created:     time.Now(),
+		Created:     time.Now().Unix(),
 		Model:       modelName,
 		Prompt:      promptTemplateName,
 		TokenCount:  botTokens + userTokens,
@@ -252,7 +257,7 @@ func rateResponse(c *gin.Context) {
 		return
 	}
 
-	err = updateConversation(userRating.DocumentID, userEmail, userRating.UserRating, projectID)
+	err = updateConversation(userRating.DocumentID, encryptedEmail, userRating.UserRating, projectID)
 	if err != nil {
 		LogError(err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{
