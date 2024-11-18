@@ -1,4 +1,4 @@
-# Instructions
+# Server: Instructions
 
 This document contains the directions for running, building, and deploying the
 MyHerodotus web app.
@@ -45,3 +45,4 @@ $ docker build . -t myherodotus -f Dockerfile --build-arg BUILD_VER=Herodotus
 $ docker tag myherodotus us-west1-docker.pkg.dev/${PROJECT_ID}/my-herodotus/base-image:${SEMVER}
 $ docker push us-west1-docker.pkg.dev/${PROJECT_ID}/my-herodotus/base-image:${SEMVER}
 ```
+

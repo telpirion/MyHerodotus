@@ -1,0 +1,14 @@
+syntax = "proto3";
+package myherodotus;
+
+//option go_package = "myherodotus.com/main"; 
+
+message ConversationBit {
+  string bot_response = 1;
+  string user_query = 2;
+  string model = 3;
+  string prompt = 4;
+  int64  created = 5;
+  int32  token_count = 6;
+  string rating = 7;
+}

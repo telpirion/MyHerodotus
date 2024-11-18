@@ -1,8 +1,7 @@
-functions-framework==3.*
-pandas
-google-cloud-aiplatform
+bigframes
 google-cloud-aiplatform[evaluation]
 google-cloud-bigquery
-bigframes
+google-cloud-firestore
+pandas
 pandas-io
 pandas-gbq

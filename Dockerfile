@@ -1,7 +1,5 @@
 FROM golang:1.23 AS build
 
-# Avoid dynamic linking of libc, since we are using a different deployment image
-# that might have a different version of libc.
 ARG BUILD_VER=HerodotusStaging
 
 ENV CGO_ENABLED=0
@@ -16,7 +14,7 @@ WORKDIR /
 COPY site/js ./site/js
 COPY site/css ./site/css
 COPY site/html ./site/html
-COPY server/templates ./server/templates
+COPY prompts ./server/templates
 COPY server/favicon.ico ./server/favicon.ico
 COPY server/* ./server
 
