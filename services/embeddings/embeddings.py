@@ -1,4 +1,4 @@
-from typing import Mapping
+from typing import List, Mapping, Set
 
 import os
 
@@ -7,10 +7,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
+from google.cloud import storage
+
+
 CONTEXT_SIZE = 2
 EMBEDDING_DIM = 10
 
-project_id = ""
 
 class NGramLanguageModeler(nn.Module):
     def __init__(self, vocab_size, embedding_dim, context_size):
@@ -80,7 +82,7 @@ def create_ngrams(herodotus_arr: str):
 
 def get_herodotus(char_count: int = 0, front_matter: int = 285) -> str:
     herodotus_text = ""
-    with open("../data/history.mb.txt", "r") as f:
+    with open("history.mb.txt", "r") as f:
         herodotus_text = f.read()
     
     if char_count:
@@ -88,8 +90,18 @@ def get_herodotus(char_count: int = 0, front_matter: int = 285) -> str:
 
     return herodotus_text[front_matter]
 
+
+def save_model_to_storage(project_id: str, bucket_name: str, model_path: str):
+    client = storage.Client(project=project_id)
+    bucket = client.bucket(bucket_name)
+    blob = bucket.blob(model_path)
+    blob.upload_from_filename(model_path)
+
+
 def main():
     project_id = os.getenv("PROJECT_ID")
+    output_path = os.getenv("OUTPUT_PATH")
+    bucket = os.getenv("BUCKET_NAME")
     torch.manual_seed(1)
 
     herodotus_text = get_herodotus(char_count=1985)
@@ -99,8 +111,15 @@ def main():
     vocab = set(herodotus_arr)
     word_to_ix = {word: i for i, word in enumerate(vocab)}
     model = create_embeddings(ngrams, word_to_ix, vocab)
+    torch.save(model.state_dict(), output_path)
+    save_model_to_storage(
+        project_id=project_id,
+        bucket_name=bucket,
+        model_path=output_path)
+
 
 
 if __name__ == "__main__":
     print("start embeddings creation")
     main()
+    print("embeddings created")

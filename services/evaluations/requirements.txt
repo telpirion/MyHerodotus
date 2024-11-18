@@ -1,0 +1,7 @@
+bigframes
+google-cloud-aiplatform[evaluation]
+google-cloud-bigquery
+google-cloud-firestore
+pandas
+pandas-io
+pandas-gbq
