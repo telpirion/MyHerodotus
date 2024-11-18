@@ -74,17 +74,19 @@ $ docker run -e PROJECT_ID=$PROJECT_ID -e DATASET_NAME=$DATASET_NAME -it --rm --
 
 The [embeddings](../services/embeddings/) microservice uses [PyTorch][pytorch] to
 generate custom embeddings from a specified text, in this case the _Histories_ by
-Herodotus.
+Herodotus. To build this
 
 This service can be run either as a Vertex AI job or as a Cloud Run job.
 
-**TIP**: To list the available PyTorch learning containers, run the following command:
+**TIP**: To list the available PyTorch learning containers, visit the
+[list of PyTorch containers][pytorch-containers].
 
-```sh
-$ gcloud compute images list --project deeplearning-platform-release | grep pytorch
-```
 
 ### Run the job locally
+
+**NOTE**: The size required for building this Docker image will likely cause Cloud
+Shell to run out of space. Instead of running locally, you might need to send
+the request to build this image to [Cloud Build][build].
 
 1. Set the following environment variables.
 
@@ -99,6 +101,40 @@ $ gcloud compute images list --project deeplearning-platform-release | grep pyto
     $ docker run -e PROJECT_ID=$PROJECT_ID -e BUCKET_NAME=$BUCKET_NAME -it --rm --name embeddings-running embeddings 
     ```
 
+### Build the Docker container on Cloud Build
 
+1. Set the following environment variables.
+
+  + `PROJECT_ID`
+  + `SEMVER`
+
+From the root of the embeddings microservice, run the following command.
+
+```sh
+$ gcloud builds submit --region=us-west1 --config cloudbuild.yaml
+```
+
+### Run the job on Cloud Run
+
+Run the following command, making sure that you have the `PROJECT_ID` and `SEMVER` environment variables set.
+
+```sh
+$ gcloud run jobs create embeddings \
+  --region us-west1 \
+  --image us-west1-docker.pkg.dev/${PROJECT_ID}/my-herodotus/embeddings:${SEMVER}
+$ gcloud run jobs execute embeddings --region us-west1
+```
+
+### Sources
+
++ https://cloud.google.com/run/docs/create-jobs#client-libraries
++ https://cloud.google.com/build/docs/build-push-docker-image#build_an_image_using_a_build_config_file
++ https://cloud.google.com/build/docs/build-config-file-schema
++ https://cloud.google.com/deep-learning-containers/docs/choosing-container#pytorch
++ https://cloud.google.com/vertex-ai/docs/workbench/user-managed/custom-container#make_sure_your_custom_container_is_ready
++ https://pytorch.org/tutorials/beginner/saving_loading_models.html
+
+[build]: https://cloud.google.com/build/docs/build-push-docker-image
 [jobs]: https://cloud.google.com/run/docs/create-jobs
 [pytorch]: https://pytorch.org/
+[pytorch-containers]: https://cloud.google.com/deep-learning-containers/docs/choosing-container#pytorch

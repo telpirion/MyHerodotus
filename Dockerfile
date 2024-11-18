@@ -14,7 +14,7 @@ WORKDIR /
 COPY site/js ./site/js
 COPY site/css ./site/css
 COPY site/html ./site/html
-COPY server/templates ./server/templates
+COPY prompts ./server/templates
 COPY server/favicon.ico ./server/favicon.ico
 COPY server/* ./server
 

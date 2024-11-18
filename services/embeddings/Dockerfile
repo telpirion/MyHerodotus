@@ -1,4 +1,4 @@
-FROM us-docker.pkg.dev/deeplearning-platform-release/gcr.io/pytorch-2-0-gpu-v20240922-debian-11
+FROM us-docker.pkg.dev/deeplearning-platform-release/gcr.io/pytorch-cu121.2-3.py310
 
 ARG OUTPUT_PATH=/artifacts
 ENV OUTPUT_PATH=$OUTPUT_PATH
@@ -6,6 +6,7 @@ ENV OUTPUT_PATH=$OUTPUT_PATH
 WORKDIR /
 
 COPY embeddings.py ./embeddings.py
+COPY adversarial.py ./adversarial.py
 COPY requirements.txt ./requirements.txt
 COPY history.mb.txt ./history.mb.txt
 

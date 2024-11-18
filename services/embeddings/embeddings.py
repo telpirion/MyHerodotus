@@ -111,7 +111,7 @@ def main():
     vocab = set(herodotus_arr)
     word_to_ix = {word: i for i, word in enumerate(vocab)}
     model = create_embeddings(ngrams, word_to_ix, vocab)
-    torch.save(model.state_dict(), f"{OUTPUT_PATH}")
+    torch.save(model.state_dict(), output_path)
     save_model_to_storage(
         project_id=project_id,
         bucket_name=bucket,
