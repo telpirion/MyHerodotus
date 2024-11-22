@@ -70,6 +70,30 @@ $ docker build . -t evaluations -f Dockerfile
 $ docker run -e PROJECT_ID=$PROJECT_ID -e DATASET_NAME=$DATASET_NAME -it --rm --name evaluations-running evaluations 
 ```
 
+### Build the Docker container on Cloud Build
+
+1. Set the following environment variables.
+
+  + `PROJECT_ID`
+  + `SEMVER`
+
+From the root of the evaluations microservice, run the following command.
+
+```sh
+$ gcloud builds submit --region=us-west1 --config cloudbuild.yaml
+```
+
+### Run the job on Cloud Run
+
+Run the following command, making sure that you have the `PROJECT_ID` and `SEMVER` environment variables set.
+
+```sh
+$ gcloud run jobs create evaluations \
+  --region us-west1 \
+  --image us-west1-docker.pkg.dev/${PROJECT_ID}/my-herodotus/evaluations:${SEMVER}
+$ gcloud run jobs execute evaluations --region us-west1
+```
+
 ## Embeddings
 
 The [embeddings](../services/embeddings/) microservice uses [PyTorch][pytorch] to
