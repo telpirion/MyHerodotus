@@ -39,3 +39,40 @@
     ```sh
     $ rm -rfd .npm
     ```
+
+## Change Python version on Cloud Shell
+
+Use `pyenv` to switch Python versions.
+
+1. Install `pyenv` to install python on persistent home directory.
+
+    ```sh
+    $ curl https://pyenv.run | bash
+    ```
+
+1. Add `pyenv` to path.
+
+    ```sh
+    $ echo 'export PATH="$HOME/.pyenv/bin:$PATH"' >> ~/.bashrc
+    $ echo 'eval "$(pyenv init -)"' >> ~/.bashrc
+    $ echo 'eval "$(pyenv virtualenv-init -)"' >> ~/.bashrc
+    ```
+
+1. Update `.bashrc`.
+
+    ```sh
+    $ source ~/.bashrc
+    ```
+
+1. Install desired version of Python and make default.
+
+    ```sh
+    $ pyenv install 3.10.7
+    $ pyenv global 3.10.7
+    ```
+
+1. Switch to the desired version of Python for `virtualenv`.
+
+    ```sh
+    virtualenv env --python=python3.10.7
+    ```
