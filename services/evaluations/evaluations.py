@@ -12,6 +12,7 @@ import bigframes.pandas as bpd
 from google.cloud import bigquery
 
 import vertexai
+from vertexai import generative_models
 from vertexai.generative_models import GenerativeModel
 from vertexai.evaluation import EvalTask, Rouge, PointwiseMetric, PointwiseMetricPromptTemplate, MetricPromptTemplateExamples
 
@@ -44,7 +45,7 @@ def main():
 
         metrics = get_metrics()
         timestamp = datetime.utcnow()
-        timestamp_str = timestamp.isoformat(timespec='hours')
+        timestamp_str = timestamp.strftime("%Y_%m_%d_%H_%M")
         
         tuned_model_endpoint = "1926929312049528832"
         tuned_model_name = f"projects/{project_id}/locations/{location}/endpoints/{tuned_model_endpoint}"
@@ -67,7 +68,20 @@ def main():
             logger.info(f"{model_name} goldens results written to log")
 
             logger.info(f"{model_name} adversarials eval started")
-            adversarials_df = run_eval(model_id=model_id, eval_dataset=adversarial_dataset, metrics=metrics)
+
+            # Relax safety settings
+            safety_settings = [
+                generative_models.SafetySetting(
+                    category=generative_models.HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+                    threshold=generative_models.HarmBlockThreshold.BLOCK_ONLY_HIGH,
+                ),
+                generative_models.SafetySetting(
+                    category=generative_models.HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+                    threshold=generative_models.HarmBlockThreshold.BLOCK_ONLY_HIGH,
+                ),
+            ]
+
+            adversarials_df = run_eval(model_id=model_id, eval_dataset=adversarial_dataset, metrics=metrics, safety_settings=safety_settings)
             table_name = f"{project_id}.{dataset_name}.{model_name}_adversarials_{timestamp_str}"
             store_results(results_df, table_name, project_id)
             logger.info(f"{model_name} adversarials results written to log")
@@ -79,8 +93,8 @@ def main():
         logger.error(tb)
 
 
-def run_eval(model_id: str, eval_dataset: pd.DataFrame, metrics: List[any]) -> pd.DataFrame:
-    candidate_model = GenerativeModel(model_id)
+def run_eval(model_id: str, eval_dataset: pd.DataFrame, metrics: List[any], safety_settings: List[any] = None) -> pd.DataFrame:
+    candidate_model = GenerativeModel(model_id, safety_settings=safety_settings)
     pointwise_eval_task = EvalTask(
         dataset=eval_dataset,
         metrics=metrics,
