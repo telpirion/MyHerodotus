@@ -70,6 +70,30 @@ $ docker build . -t evaluations -f Dockerfile
 $ docker run -e PROJECT_ID=$PROJECT_ID -e DATASET_NAME=$DATASET_NAME -it --rm --name evaluations-running evaluations 
 ```
 
+### Build the Docker container on Cloud Build
+
+1. Set the following environment variables.
+
+  + `PROJECT_ID`
+  + `SEMVER`
+
+From the root of the evaluations microservice, run the following command.
+
+```sh
+$ gcloud builds submit --region=us-west1 --config cloudbuild.yaml
+```
+
+### Run the job on Cloud Run
+
+Run the following command, making sure that you have the `PROJECT_ID` and `SEMVER` environment variables set.
+
+```sh
+$ gcloud run jobs create evaluations \
+  --region us-west1 \
+  --image us-west1-docker.pkg.dev/${PROJECT_ID}/my-herodotus/evaluations:${SEMVER}
+$ gcloud run jobs execute evaluations --region us-west1
+```
+
 ## Embeddings
 
 The [embeddings](../services/embeddings/) microservice uses [PyTorch][pytorch] to
@@ -134,7 +158,61 @@ $ gcloud run jobs execute embeddings --region us-west1
 + https://cloud.google.com/vertex-ai/docs/workbench/user-managed/custom-container#make_sure_your_custom_container_is_ready
 + https://pytorch.org/tutorials/beginner/saving_loading_models.html
 
+
+## Reddit tool / agent
+
+The [Reddit tool](../services/reddit-tool/) allows the LLM to read [r/travel][subreddit] posts based
+upon a user query. The tool is packaged as a Vertex AI [Reasoning Engine agent][reasoning]. Internally, 
+the tool uses [LangChain][langchain] along with the Vertex AI Python SDK to perform its
+magic.
+
+### Deploy the agent
+
+**NOTE**: You might need to install `pyenv` first before completing these instructions.
+See [Troubleshooting](./troubleshooting.md) for more details.
+
+1. Create a virtual environment. The virtual environment needs to have Python v3.6 <= x <= v3.11.
+
+    ```sh
+    virtualenv env --python=python3.10.7
+    ```
+
+1. Switch into the virtual environment.
+
+    ```sh
+    source env/bin/activate
+    ```
+
+1. Ensure that you have created a file named `secret.py` and that
+it exports a `PROJECT_ID` constant. This file should _not_ be checked
+into version control.
+
+1. Ensure that the Google-granted service account with the address
+`gcp-sa-aiplatform-re.iam.gserviceaccount.com` has Secret Manager access permissions.
+
+1. From the root of the service, run the following command.
+
+```sh
+$ python tool.py 
+```
+
+### Test the agents
+
+* **To test the remote agent**: From the root of the reddit-tool directory, run the following command.
+
+    ```sh
+    pytest -k "test_query_agent_remote"
+    ```
+
+* **To test the agent locally**: From the root of the reddit-tool directory, run the following command.
+
+    ```sh
+    pytest -k "test_create_agent_local"
+    ```
+
 [build]: https://cloud.google.com/build/docs/build-push-docker-image
 [jobs]: https://cloud.google.com/run/docs/create-jobs
 [pytorch]: https://pytorch.org/
 [pytorch-containers]: https://cloud.google.com/deep-learning-containers/docs/choosing-container#pytorch
+[reasoning]: https://github.com/GoogleCloudPlatform/generative-ai/blob/main/gemini/reasoning-engine/tutorial_google_maps_agent.ipynb
+[subreddit]: https://www.reddit.com/r/travel/

@@ -2,8 +2,12 @@
 .readmes
 .vscode
 .ipynb_checkpoints
+*.pyc
 
 my-herodotus
 
 # Firebase app config
 appInit.js
+
+# App data passed to reddit-tool
+services/reddit-tool/secret.py
