@@ -6,8 +6,10 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
 	"time"
+
+	ai "github.com/telpirion/MyHerodotus/ai"
+	"github.com/telpirion/MyHerodotus/generated"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,7 +20,6 @@ var (
 	userEmail      string = "anonymous@example.com"
 	encryptedEmail string
 	userEmailParam string = "user"
-	convoContext   string
 	contextTokens  int32
 )
 
@@ -70,6 +71,7 @@ func main() {
 	r.POST("/logClientError", clientError)
 	r.GET("/error", errPage)
 	r.POST("/rateResponse", rateResponse)
+	r.POST("/predict", predict)
 
 	log.Fatal(r.Run(":8080"))
 }
@@ -99,22 +101,22 @@ func startConversation(c *gin.Context) {
 
 	// VertexAI + Gemini caching has a hard lower minimum; warn if the
 	// minimum isn't reached
-	convoContext, err = storeConversationContext(convoHistory, projectID)
-	var minConvoNum *MinCacheNotReachedError
+	convoContext, err := ai.StoreConversationContext(convoHistory, projectID)
+	var minConvoNum *ai.MinCacheNotReachedError
 	if errors.As(err, &minConvoNum) {
 		LogWarning(err.Error())
 	} else if err != nil {
 		LogError(fmt.Sprintf("couldn't store conversation context: %v\n", err))
 	}
 
-	contextTokens, err = getTokenCount(convoContext)
+	contextTokens, err = ai.GetTokenCount(convoContext, projectID)
 	if err != nil {
 		LogWarning(fmt.Sprintf("couldn't get context token count: %v\n", err))
 	}
 
 	// Populate the conversation context variable for grounding both Gemma and
 	// Gemini (< 33000 tokens) caching.
-	err = setConversationContext(convoHistory)
+	err = ai.SetConversationContext(convoHistory)
 	if err != nil {
 		LogError(fmt.Sprintf("couldn't set conversation context: %v\n", err))
 	}
@@ -145,13 +147,7 @@ func respondToUser(c *gin.Context) {
 		return
 	}
 
-	if strings.ToLower(userMsg.Model) == "gemma" {
-		botResponse, err = textPredictGemma(userMsg.Message, projectID)
-		promptTemplateName = GemmaTemplate
-	} else { // Gemini is default, both tuned and OOTB
-		botResponse, err = textPredictGemini(userMsg.Message, projectID, strings.ToLower(userMsg.Model))
-		promptTemplateName = GeminiTemplate
-	}
+	botResponse, promptTemplateName, err = ai.Predict(userMsg.Message, userMsg.Model, projectID)
 	if err != nil {
 		LogError(fmt.Sprintf("bad response from %s: %v\n", userMsg.Model, err))
 		botResponse = "Oops! I had troubles understanding that ..."
@@ -162,8 +158,6 @@ func respondToUser(c *gin.Context) {
 	if err != nil {
 		LogError(err.Error())
 	}
-
-	cachedContext += fmt.Sprintf("### Human: %s\n### Assistant: %s\n", userMsg.Message, botResponse)
 
 	c.JSON(http.StatusOK, gin.H{
 		"Message": struct {
@@ -192,17 +186,17 @@ func updateDatabase(projectID, userMessage, modelName, promptTemplateName, botRe
 	}
 
 	// Get the number of tokens in the user message and response
-	botTokens, err := getTokenCount(botResponse)
+	botTokens, err := ai.GetTokenCount(botResponse, projectID)
 	if err != nil {
 		return "", fmt.Errorf("can't get bot token count: %v", err)
 	}
 
-	userTokens, err := getTokenCount(cleanMsg)
+	userTokens, err := ai.GetTokenCount(cleanMsg, projectID)
 	if err != nil {
 		return "", fmt.Errorf("can't get bot token count: %v", err)
 	}
 
-	convo := &ConversationBit{
+	convo := &generated.ConversationBit{
 		UserQuery:   cleanMsg,
 		BotResponse: botResponse,
 		Created:     time.Now().Unix(),
@@ -268,4 +262,35 @@ func rateResponse(c *gin.Context) {
 	LogInfo("User rating successfully recorded")
 
 	c.JSON(http.StatusOK, gin.H{"success": "rating logged"})
+}
+
+func predict(c *gin.Context) {
+	var userMsg UserMessage
+	err := c.BindJSON(&userMsg)
+	if err != nil {
+		responseMsg := fmt.Sprintf("predict: could not parse client message: %v\n", err)
+		LogError(responseMsg)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"Message": responseMsg,
+		})
+		return
+	}
+
+	botResponse, _, err := ai.Predict(userMsg.Message, userMsg.Model, projectID)
+	if err != nil {
+		responseMsg := fmt.Sprintf("predict: could not get prediction: %v\n", err)
+		LogError(responseMsg)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"Message": responseMsg,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"Message": struct {
+			Message string
+		}{
+			Message: botResponse,
+		},
+	})
 }

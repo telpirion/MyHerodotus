@@ -67,7 +67,9 @@ def main():
             store_results(results_df, table_name, project_id)
             logger.info(f"{model_name} goldens results written to log")
 
-            logger.info(f"{model_name} adversarials eval started")
+        logger.info(f"{model_name} adversarials eval started")
+        for m in models:
+            model_id, model_name = m
 
             # Relax safety settings
             safety_settings = [

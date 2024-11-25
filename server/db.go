@@ -34,6 +34,8 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"google.golang.org/api/iterator"
+
+	"github.com/telpirion/MyHerodotus/generated"
 )
 
 const (
@@ -55,10 +57,10 @@ var CollectionName string = "HerodotusDev"
 */
 type ConversationHistory struct {
 	UserEmail     string
-	Conversations []ConversationBit
+	Conversations []generated.ConversationBit
 }
 
-func saveConversation(convo ConversationBit, userEmail, projectID string) (string, error) {
+func saveConversation(convo generated.ConversationBit, userEmail, projectID string) (string, error) {
 	ctx := context.Background()
 
 	// Get CollectionName for running in staging or prod
@@ -104,9 +106,9 @@ func updateConversation(documentId, userEmail, rating, projectID string) error {
 	return nil
 }
 
-func getConversation(userEmail, projectID string) ([]ConversationBit, error) {
+func getConversation(userEmail, projectID string) ([]generated.ConversationBit, error) {
 	ctx := context.Background()
-	conversations := []ConversationBit{}
+	conversations := []generated.ConversationBit{}
 	client, err := firestore.NewClientWithDatabase(ctx, projectID, DBName)
 	if err != nil {
 		LogError(fmt.Sprintf("firestore.Client: %v\n", err))
@@ -126,7 +128,7 @@ func getConversation(userEmail, projectID string) ([]ConversationBit, error) {
 			LogError(fmt.Sprintf("Firestore Iterator: %v\n", err))
 			return conversations, err
 		}
-		var convo ConversationBit
+		var convo generated.ConversationBit
 		err = doc.DataTo(&convo)
 		if err != nil {
 			LogError(fmt.Sprintf("Firestore document unmarshaling: %v\n", err))

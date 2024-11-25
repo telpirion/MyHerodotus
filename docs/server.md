@@ -46,3 +46,28 @@ $ docker tag myherodotus us-west1-docker.pkg.dev/${PROJECT_ID}/my-herodotus/base
 $ docker push us-west1-docker.pkg.dev/${PROJECT_ID}/my-herodotus/base-image:${SEMVER}
 ```
 
+## Get predictions directly from API
+
+The MyHerodotus app exposes an API endpoint, `/predict`, that allows callers to send
+raw prediction requests to the AI system.
+
+The following code sample demonstrates how to get a simple prediction from the `predict`
+endpoint using `curl`. This assumes that the MyHerodotus app is running locally and
+listeningon port `:8080`.
+
+```sh
+curl --header "Content-Type: application/json" \
+  --request POST \
+  --data '{"message":"I want to go to Greece","model":"gemini"}' \
+  http://localhost:8080/predict
+```
+
+The following code sample demonstrates how to get a simple prediction from the `predict`
+endpoint of the deployed Herodotus app using `curl`.  
+
+```sh
+curl --header "Content-Type: application/json" \
+  --request POST \
+  --data '{"message":"I want to go to Greece","model":"gemini"}' \
+  https://myherodotus-1025771077852.us-west1.run.app/predict
+```
