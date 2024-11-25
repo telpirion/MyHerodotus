@@ -1,4 +1,4 @@
-module my-herodotus
+module github.com/telpirion/MyHerodotus
 
 go 1.23.0
 
