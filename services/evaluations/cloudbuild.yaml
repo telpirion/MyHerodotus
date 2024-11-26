@@ -3,7 +3,7 @@ steps:
   env:
   - 'DATASET_NAME=myherodotus'
   script: |
-    docker build -t us-west1-docker.pkg.dev/$PROJECT_ID/my-herodotus/evaluations:v0.1.0 .
+    docker build -t us-west1-docker.pkg.dev/$PROJECT_ID/my-herodotus/evaluations:v0.2.0 .
   automapSubstitutions: true
 images:
-- 'us-west1-docker.pkg.dev/$PROJECT_ID/my-herodotus/evaluations:v0.1.0'
+- 'us-west1-docker.pkg.dev/$PROJECT_ID/my-herodotus/evaluations:v0.2.0'

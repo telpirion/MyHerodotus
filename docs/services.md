@@ -162,14 +162,57 @@ $ gcloud run jobs execute embeddings --region us-west1
 ## Reddit tool / agent
 
 The [Reddit tool](../services/reddit-tool/) allows the LLM to read [r/travel][subreddit] posts based
-upon a user query. The tool is packaged as a Vertex AI [Reasoning Engine agent][reasoning]. Internally, 
-the tool uses [LangChain][langchain] along with the Vertex AI Python SDK to perform its
-magic.
+upon a user query. The tool is packaged as a Vertex AI [Reasoning Engine agent][reasoning]. 
+Internally,  the tool uses [LangChain][langchain] along with the Vertex AI Python
+SDK to perform its magic.
 
-### Deploy the agent
+**WARNING**: As of writing (2024-11-26), the Vertex AI Reasoning Engine agent
+doesn't work as intended. Instead, the agent is published to Cloud Functions.
 
-**NOTE**: You might need to install `pyenv` first before completing these instructions.
-See [Troubleshooting](./troubleshooting.md) for more details.
+### Test the agent locally (Cloud Functions)
+
+1. Run the Cloud Function locally.
+
+```sh
+functions-framework-python --target get_agent_request
+```
+
+1. Send a request to the app with `curl`.
+
+```sh
+curl --header "Content-Type: application/json" \
+  --request POST \
+  --data '{"query":"I want to go to Crete. Where should I stay?"}' \
+  http://localhost:8080
+```
+
+Deployed location:
+https://reddit-tool-1025771077852.us-west1.run.app
+
+### Deploy the agent (Cloud Functions)
+
+Run the following from the root of the reddit-tool directory.
+
+```sh
+  gcloud functions deploy reddit-tool \
+    --gen2 \
+    --memory=512MB \
+    --timeout=120s \
+    --runtime=python312 \
+    --region=us-west1 \
+    --set-env-vars PROJECT_ID=${PROJECT_ID},BUCKET=${BUCKET} \
+    --source=. \
+    --entry-point=get_agent_request \
+    --trigger-http \
+    --allow-unauthenticated
+```
+
+### Deploy the agent (Reasoning Engine)
+
+**NOTES**: 
++ You might need to install `pyenv` first before completing these instructions.
+  See [Troubleshooting](./troubleshooting.md) for more details.
++ 
 
 1. Create a virtual environment. The virtual environment needs to have Python v3.6 <= x <= v3.11.
 

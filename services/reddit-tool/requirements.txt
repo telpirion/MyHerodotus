@@ -1,7 +1,7 @@
 praw
-google-cloud-aiplatform
 google-cloud-secret-manager
+google-cloud-aiplatform
 google-cloud-aiplatform[langchain,reasoningengine]
-cloudpickle==3.0.0
-pydantic==2.7.4
 pytest
+pydantic==2.7.4
+functions-framework
