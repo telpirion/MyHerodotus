@@ -5,3 +5,4 @@ google-cloud-firestore
 pandas
 pandas-io
 pandas-gbq
+protobuf

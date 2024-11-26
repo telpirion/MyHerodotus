@@ -10,11 +10,13 @@ COLLECTION_NAME = "PromptTemplate"
 GOLDENS = "goldens20241104"
 ADVERSARIALS = "adversarial20241117"
 
+
 @dataclass
 class Template:
     model: str
     prompt: str
     date: int
+
 
 def get_templates(*args, project_id: str, database_name: str) -> list[Template]:
 
@@ -25,7 +27,12 @@ def get_templates(*args, project_id: str, database_name: str) -> list[Template]:
     collection = client.collection(COLLECTION_NAME)
 
     for a in args:
-        modelTemplates = collection.document(a).collection("Templates").order_by("Created", direction=firestore.Query.ASCENDING).stream()
+        modelTemplates = (
+            collection.document(a)
+            .collection("Templates")
+            .order_by("Created", direction=firestore.Query.ASCENDING)
+            .stream()
+        )
         results = [r for r in modelTemplates]
 
         if len(results) == 0:
@@ -33,9 +40,12 @@ def get_templates(*args, project_id: str, database_name: str) -> list[Template]:
             continue
 
         template = results[0].to_dict()
-        templates.append(Template(model=a, prompt=template["Prompt"], date=template["Created"]))
+        templates.append(
+            Template(model=a, prompt=template["Prompt"], date=template["Created"])
+        )
 
     return templates
+
 
 def get_goldens(project_id: str, dataset_name: str) -> pd.DataFrame:
     bq_client = bigquery.Client(project_id)
@@ -47,6 +57,7 @@ def get_goldens(project_id: str, dataset_name: str) -> pd.DataFrame:
 
     golden_dataset = bq_client.query_and_wait(sql).to_dataframe()
     return golden_dataset
+
 
 def get_adversarials(project_id: str, dataset_name: str) -> pd.DataFrame:
     bq_client = bigquery.Client(project_id)
