@@ -79,6 +79,8 @@ func Predict(query, modality, projectID string) (response string, templateName s
 		response, err = textPredictGemma(query, projectID)
 	case GeminiTuned:
 		response, err = textPredictGemini(query, projectID, GeminiTuned)
+	case AgentAssisted:
+		response, err = textPredictWithReddit(query, projectID)
 	default:
 		response, err = textPredictGemini(query, projectID, Gemini)
 	}
@@ -123,6 +125,51 @@ func SetConversationContext(convoHistory []generated.ConversationBit) error {
 	tmp.Execute(&buf, convoHistory)
 	cachedContext = buf.String()
 	return nil
+}
+
+// storeConversationContext uploads past user conversations with the model into a Gen AI context.
+// This context is used when the model is answering questions from the user.
+func StoreConversationContext(conversationHistory []generated.ConversationBit, projectID string) (string, error) {
+	if len(conversationHistory) < MinimumConversationNum {
+		return "", &MinCacheNotReachedError{ConversationCount: len(conversationHistory)}
+	}
+
+	ctx := context.Background()
+	location := "us-west1"
+	client, err := genai.NewClient(ctx, projectID, location)
+	if err != nil {
+		return "", fmt.Errorf("unable to create client: %w", err)
+	}
+	defer client.Close()
+
+	var userParts []genai.Part
+	var modelParts []genai.Part
+	for _, p := range conversationHistory {
+		userParts = append(userParts, genai.Text(p.UserQuery))
+		modelParts = append(modelParts, genai.Text(p.BotResponse))
+	}
+
+	content := &genai.CachedContent{
+		Model:      GeminiModel,
+		Expiration: genai.ExpireTimeOrTTL{TTL: 60 * time.Minute},
+		Contents: []*genai.Content{
+			{
+				Role:  "user",
+				Parts: userParts,
+			},
+			{
+				Role:  "model",
+				Parts: modelParts,
+			},
+		},
+	}
+	result, err := client.CreateCachedContent(ctx, content)
+	if err != nil {
+		return "", fmt.Errorf("CreateCachedContent: %w", err)
+	}
+	resourceName := result.Name
+
+	return resourceName, nil
 }
 
 // extractAnswer cleans up the response returned from the models
@@ -271,51 +318,6 @@ func getCandidate(resp *genai.GenerateContentResponse) (string, error) {
 	return string(candidate), nil
 }
 
-// storeConversationContext uploads past user conversations with the model into a Gen AI context.
-// This context is used when the model is answering questions from the user.
-func StoreConversationContext(conversationHistory []generated.ConversationBit, projectID string) (string, error) {
-	if len(conversationHistory) < MinimumConversationNum {
-		return "", &MinCacheNotReachedError{ConversationCount: len(conversationHistory)}
-	}
-
-	ctx := context.Background()
-	location := "us-west1"
-	client, err := genai.NewClient(ctx, projectID, location)
-	if err != nil {
-		return "", fmt.Errorf("unable to create client: %w", err)
-	}
-	defer client.Close()
-
-	var userParts []genai.Part
-	var modelParts []genai.Part
-	for _, p := range conversationHistory {
-		userParts = append(userParts, genai.Text(p.UserQuery))
-		modelParts = append(modelParts, genai.Text(p.BotResponse))
-	}
-
-	content := &genai.CachedContent{
-		Model:      GeminiModel,
-		Expiration: genai.ExpireTimeOrTTL{TTL: 60 * time.Minute},
-		Contents: []*genai.Content{
-			{
-				Role:  "user",
-				Parts: userParts,
-			},
-			{
-				Role:  "model",
-				Parts: modelParts,
-			},
-		},
-	}
-	result, err := client.CreateCachedContent(ctx, content)
-	if err != nil {
-		return "", fmt.Errorf("CreateCachedContent: %w", err)
-	}
-	resourceName := result.Name
-
-	return resourceName, nil
-}
-
 func trimContext() (last string) {
 	sep := "###"
 	convos := strings.Split(cachedContext, sep)
@@ -324,4 +326,74 @@ func trimContext() (last string) {
 		last = strings.Join(convos[length-3:length-1], sep)
 	}
 	return last
+}
+
+func textPredictWithReddit(query, projectID string) (string, error) {
+	funcName := "GetRedditPosts"
+	ctx := context.Background()
+	client, err := genai.NewClient(ctx, projectID, "us-west1")
+	if err != nil {
+		return "", err
+	}
+	defer client.Close()
+
+	schema := &genai.Schema{
+		Type: genai.TypeObject,
+		Properties: map[string]*genai.Schema{
+			"location": {
+				Type:        genai.TypeString,
+				Description: "the place the user wants to go, e.g. Crete, Greece",
+			},
+		},
+		Required: []string{"location"},
+	}
+
+	redditTool := &genai.Tool{
+		FunctionDeclarations: []*genai.FunctionDeclaration{{
+			Name:        funcName,
+			Description: "Get Reddit posts about a location from the Travel subreddit",
+			Parameters:  schema,
+		}},
+	}
+
+	model := client.GenerativeModel(GeminiModel)
+	model.Tools = []*genai.Tool{redditTool}
+
+	session := model.StartChat()
+
+	res, err := session.SendMessage(ctx, genai.Text(query))
+	if err != nil {
+		return "", nil
+	}
+
+	part := res.Candidates[0].Content.Parts[0]
+	funcCall, ok := part.(genai.FunctionCall)
+	if !ok {
+		return "", fmt.Errorf("expected function call: %v", part)
+	}
+	if funcCall.Name != funcName {
+		return "", fmt.Errorf("expected %s, got: %v", funcName, funcCall.Name)
+	}
+	locArg, ok := funcCall.Args["location"].(string)
+	if !ok {
+		return "", fmt.Errorf("expected string, got: %v", funcCall.Args["location"])
+	}
+
+	redditData, err := getRedditPosts(locArg)
+	if err != nil {
+		return "", err
+	}
+
+	res, err = session.SendMessage(ctx, genai.FunctionResponse{
+		Name: redditTool.FunctionDeclarations[0].Name,
+		Response: map[string]any{
+			"output": redditData,
+		},
+	})
+	if err != nil {
+		return "", err
+	}
+
+	output := string(res.Candidates[0].Content.Parts[0].(genai.Text))
+	return output, nil
 }

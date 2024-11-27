@@ -15,7 +15,11 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.7.4
 )
 
-require cloud.google.com/go/longrunning v0.6.1 // indirect
+require (
+	cloud.google.com/go/longrunning v0.6.1 // indirect
+	github.com/google/go-querystring v1.0.0 // indirect
+	github.com/vartanbeno/go-reddit/v2 v2.0.1 // indirect
+)
 
 require (
 	cloud.google.com/go v0.116.0 // indirect
