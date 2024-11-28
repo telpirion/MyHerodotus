@@ -1,11 +1,3 @@
-datasets
-pandas
-torch
-google-cloud-aiplatform
-google-cloud-storage
-torch
-certifi
-torch
-certifi
-torch
-certifi
+langchain-google-firestore
+google-cloud-firestore
+langchain-text-splitters
