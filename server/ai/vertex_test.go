@@ -3,11 +3,13 @@ package ai
 import (
 	"strings"
 	"testing"
+
+	"github.com/telpirion/MyHerodotus/generated"
 )
 
 func TestCreatePrompt(t *testing.T) {
 	query := "I'm a query"
-	got, err := createPrompt(query, GeminiTemplate)
+	got, err := createPrompt(query, GeminiTemplate, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -18,7 +20,7 @@ func TestCreatePrompt(t *testing.T) {
 }
 
 func TestSetConversationContext(t *testing.T) {
-	convoHistory := []ConversationBit{
+	convoHistory := []generated.ConversationBit{
 		{
 			UserQuery:   "test user query",
 			BotResponse: "test bot response",

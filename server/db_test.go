@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/firestore"
+	"github.com/telpirion/MyHerodotus/generated"
 )
 
 var (
@@ -29,18 +30,18 @@ func TestMain(m *testing.M) {
 
 	collection := client.Collection(_collectionName)
 	subcollection := collection.Doc(email2).Collection(SubCollectionName)
-	_, _, err = subcollection.Add(ctx, ConversationBit{
+	_, _, err = subcollection.Add(ctx, generated.ConversationBit{
 		UserQuery:   "test user query",
 		BotResponse: "test bot response",
-		Created:     time.Now(),
+		Created:     time.Now().Unix(),
 	})
 	if err != nil {
 		log.Fatal(err)
 	}
-	_, _, err = subcollection.Add(ctx, ConversationBit{
+	_, _, err = subcollection.Add(ctx, generated.ConversationBit{
 		UserQuery:   "test user query 2",
 		BotResponse: "test bot response 2",
-		Created:     time.Now(),
+		Created:     time.Now().Unix(),
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -61,10 +62,10 @@ func TestMain(m *testing.M) {
 }
 
 func TestSaveConversation(t *testing.T) {
-	convo := &ConversationBit{
+	convo := &generated.ConversationBit{
 		UserQuery:   "This is from unit test",
 		BotResponse: "This is a bot response",
-		Created:     time.Now(),
+		Created:     time.Now().Unix(),
 	}
 	id, err := saveConversation(*convo, email, _projectID)
 	if err != nil {
@@ -75,10 +76,10 @@ func TestSaveConversation(t *testing.T) {
 		t.Error("Empty document ID")
 	}
 
-	nextConvo := &ConversationBit{
+	nextConvo := &generated.ConversationBit{
 		UserQuery:   "This is also from a unit test",
 		BotResponse: "This is another fake bot response",
-		Created:     time.Now(),
+		Created:     time.Now().Unix(),
 	}
 	nextID, err := saveConversation(*nextConvo, email, _projectID)
 	if err != nil {
