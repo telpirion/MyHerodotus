@@ -81,6 +81,8 @@ func Predict(query, modality, projectID string) (response string, templateName s
 		response, err = textPredictGemini(query, projectID, GeminiTuned)
 	case AgentAssisted:
 		response, err = textPredictWithReddit(query, projectID)
+	case EmbeddingsAssisted:
+		response, err = textPredictWithEmbeddings(query, projectID)
 	default:
 		response, err = textPredictGemini(query, projectID, Gemini)
 	}
@@ -396,4 +398,36 @@ func textPredictWithReddit(query, projectID string) (string, error) {
 
 	output := string(res.Candidates[0].Content.Parts[0].(genai.Text))
 	return output, nil
+}
+
+func textPredictWithEmbeddings(query, projectID string) (string, error) {
+
+	// Get context from embeddings
+	embeddingContext, err := getEmbedding(query, projectID)
+	if err != nil {
+		return "", err
+	}
+
+	ctx := context.Background()
+	client, err := genai.NewClient(ctx, projectID, "us-west1")
+	if err != nil {
+		return "", err
+	}
+	defer client.Close()
+
+	llm := client.GenerativeModel(GeminiModel)
+
+	createPrompt(query, GeminiTemplate, embeddingContext)
+
+	resp, err := llm.GenerateContent(ctx, genai.Text(query))
+	if err != nil {
+		fmt.Println(err.Error())
+		return "", err
+	}
+
+	candidate, err := getCandidate(resp)
+	if err != nil {
+		return "I'm not sure how to answer that. Would you please repeat the question?", nil
+	}
+	return extractAnswer(candidate), nil
 }

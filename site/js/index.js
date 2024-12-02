@@ -86,6 +86,10 @@ function processForm(e) {
 
     // Collect data
     const message = document.getElementById("userMsg").value;
+    if (message === "") {
+        return;
+    }
+
     const selection = document.getElementById("modelSelect");
     const model = selection.options[selection.selectedIndex].text;
 
