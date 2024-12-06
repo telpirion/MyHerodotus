@@ -94,6 +94,32 @@ $ gcloud run jobs create evaluations \
 $ gcloud run jobs execute evaluations --region us-west1
 ```
 
+### Query the results of evaluations in BigQuery
+
+In the BigQuery SQL editor, run the following SQL command. Be sure to replace `project_id`,
+`dataset_id`, and table names as appropriate.
+
+```sql
+WITH 
+    CombinedScores AS (
+    SELECT 'tuned_gemini' AS model_name, AVG(rouge_score) as avg_rouge_score, AVG(coherence_score) as avg_coherence_score, AVG(groundedness_score) as avg_ground_score, AVG(open_domain_score) as domain_score, AVG(closed_domain_score) as closed_domain_score
+    FROM `myherodotus.tuned_gemini_goldens_2024_12_06_23_30`
+    UNION ALL
+    SELECT 'gemma' AS model_name, AVG(rouge_score), AVG(coherence_score), AVG(groundedness_score), AVG(open_domain_score), AVG(closed_domain_score)
+    FROM `myherodotus.gemma_goldens_2024_12_06_23_30`
+    UNION ALL
+    SELECT 'gemini_1_5_flash_001' AS model_name, AVG(rouge_score), AVG(coherence_score), AVG(groundedness_score), AVG(open_domain_score), AVG(closed_domain_score)
+    FROM `myherodotus.gemini_1_5_flash_001_goldens_2024_12_06_23_30`
+    #UNION ALL
+    #SELECT 'agent-assisted' AS model_name, AVG(rouge_score), AVG(coherence_score), AVG(groundedness_score)
+    #FROM `myherodotus.agent-assisted_goldens_2024_12_06_23_30`
+    #UNION ALL
+    #SELECT 'embeddings-assisted' AS model_name, AVG(rouge_score), AVG(coherence_score), AVG(groundedness_score)
+    #FROM `myherodotus.embeddings-assisted_goldens_2024_12_06_23_30`
+)
+SELECT * FROM CombinedScores;
+```
+
 ## Embeddings
 
 The [embeddings](../services/embeddings/) microservice uses [PyTorch][pytorch] to

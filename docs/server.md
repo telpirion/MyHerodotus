@@ -68,6 +68,6 @@ endpoint of the deployed Herodotus app using `curl`.
 ```sh
 curl --header "Content-Type: application/json" \
   --request POST \
-  --data '{"message":"I want to go to Greece","model":"gemini"}' \
+  --data '{"message":"I want to go to Greece","model":"agent-assisted"}' \
   https://myherodotus-1025771077852.us-west1.run.app/predict
 ```
