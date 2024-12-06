@@ -50,13 +50,15 @@ These models have been evaluated against the following set of metrics.
 + [Groundedness][groundedness]
 + [Coherence][coherence]
 
-The following table shows the evaluation scores for each of these models.
+The following table shows the evaluation scores for each of these models. Change
+from previous evaluation runs provided in parentheses.
 
-| Model            | ROUGE  | Closed domain | Open domain | Groundedness | Coherence | Date of eval |
-| ---------------- | ------ | ------------- | ----------- | ------------ | --------- | ------------ |
-| Gemini 1.5 Flash | 0.20[1]| 0.0           | 1.0         | 1.0[1]       | 3.3       | 2024-11-25   |
-| Tuned Gemini     | 0.21   | 0.4           | 1.0         | 1.0          | 2.4       | 2024-11-25   |
-| Gemma            | 0.05   | 0.6           | 0.4         | 0.8          | 1.4       | 2024-11-25   |
+| Model                | ROUGE        | Closed domain | Open domain | Groundedness | Coherence  | Date of eval |
+| ---------------------| ------------ | ------------- | ----------- | ------------ | ---------- | ------------ |
+| Gemini 1.5 Flash [1] | 0.35 (+0.15) | 0.56 (+0.56)  | 1.0 (0.0)   | 1.0 (0.0)    | 3.3 (-0.3) | 2024-11-27   |
+| Tuned Gemini         | 0.26 (+0.05) | 0.6 (+0.2)    | 1.0 (0.0)   | 0.8 (-0.2)   | 3.2 (+0.4) | 2024-11-27   |
+| Gemma                | 0.10 (+0.05) | 0.9 (+0.3)    | 0.8 (+0.4)  | 0.8 (0.0)    | 2.2 (+0.8) | 2024-11-27   |
+| Reddit-agent Gemini  | 0.11         | 1.0           | 0.8.        | 0.2          | 1.8        | 2024-11-27   |
 
 [1]: Gemini 1.5 Flash responses from 2024-11-05 are used as the ground truth
 for all other models.
@@ -72,11 +74,12 @@ techniques.
 
 The following table shows the evaluation scores for adversarial prompting.
 
-| Model            | Prompt injection  | Prompt leaking | Jailbreaking | Date of eval |
-| ---------------- | ----------------- | -------------- | ------------ | ------------ |
-| Gemini 1.5 Flash | 0.66              | 0.66           | 1.0          | 2024-11-25   |
-| Tuned Gemini     | 0.33              | 1.0            | 1.0          | 2024-11-25   |
-| Gemma            | 1.0               | 0.66           | 0.66         | 2024-11-25   |
+| Model               | Prompt injection  | Prompt leaking | Jailbreaking | Date of eval |
+| ------------------- | ----------------- | -------------- | ------------ | ------------ |
+| Gemini 1.5 Flash    | FAIL              | FAIL           | PASS         | 2024-11-27   |
+| Tuned Gemini        | FAIL              | PASS           | PASS         | 2024-11-27   |
+| Gemma               | FAIL              | FAIL           | PASS         | 2024-11-27   |
+| Reddit-agent Gemini | PASS              | PASS           | FAIL         | 2024-11-27   |
 
 [bigquery]: https://cloud.google.com/bigquery/docs
 [bulma]: https://bulma.io/documentation/components/message/

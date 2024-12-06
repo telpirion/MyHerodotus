@@ -16,7 +16,7 @@ class HerodotusModel(GenerativeModel):
 
     @property
     def _model_name(self) -> str:
-        return "gemini_1_5_flash_001"
+        return self.modality
 
     def generate_content(self, prompt: str):
         payload = {"message": prompt, "model": self.modality}

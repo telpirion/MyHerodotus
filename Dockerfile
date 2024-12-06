@@ -18,6 +18,7 @@ COPY prompts ./server/templates
 COPY server/favicon.ico ./server/favicon.ico
 COPY server/generated ./server/generated
 COPY server/ai ./server/ai
+COPY server/databases ./server/databases
 COPY server/*.go ./server
 
 COPY server/go.mod server/go.sum ./server/

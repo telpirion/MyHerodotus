@@ -25,11 +25,10 @@ Herodotus [
 
 ]
 */
-package main
+package databases
 
 import (
 	"context"
-	"fmt"
 	"os"
 
 	"cloud.google.com/go/firestore"
@@ -60,7 +59,7 @@ type ConversationHistory struct {
 	Conversations []generated.ConversationBit
 }
 
-func saveConversation(convo generated.ConversationBit, userEmail, projectID string) (string, error) {
+func SaveConversation(convo generated.ConversationBit, userEmail, projectID string) (string, error) {
 	ctx := context.Background()
 
 	// Get CollectionName for running in staging or prod
@@ -71,7 +70,6 @@ func saveConversation(convo generated.ConversationBit, userEmail, projectID stri
 
 	client, err := firestore.NewClientWithDatabase(ctx, projectID, DBName)
 	if err != nil {
-		LogError(fmt.Sprintf("firestore.Client: %v\n", err))
 		return "", err
 	}
 	defer client.Close()
@@ -83,7 +81,7 @@ func saveConversation(convo generated.ConversationBit, userEmail, projectID stri
 	return docRef.ID, err
 }
 
-func updateConversation(documentId, userEmail, rating, projectID string) error {
+func UpdateConversation(documentId, userEmail, rating, projectID string) error {
 
 	// Get CollectionName for running in staging or prod
 	_collectionName, ok := os.LookupEnv("COLLECTION_NAME")
@@ -106,12 +104,11 @@ func updateConversation(documentId, userEmail, rating, projectID string) error {
 	return nil
 }
 
-func getConversation(userEmail, projectID string) ([]generated.ConversationBit, error) {
+func GetConversation(userEmail, projectID string) ([]generated.ConversationBit, error) {
 	ctx := context.Background()
 	conversations := []generated.ConversationBit{}
 	client, err := firestore.NewClientWithDatabase(ctx, projectID, DBName)
 	if err != nil {
-		LogError(fmt.Sprintf("firestore.Client: %v\n", err))
 		return conversations, err
 	}
 	defer client.Close()
@@ -125,13 +122,12 @@ func getConversation(userEmail, projectID string) ([]generated.ConversationBit, 
 			break
 		}
 		if err != nil {
-			LogError(fmt.Sprintf("Firestore Iterator: %v\n", err))
 			return conversations, err
 		}
 		var convo generated.ConversationBit
 		err = doc.DataTo(&convo)
 		if err != nil {
-			LogError(fmt.Sprintf("Firestore document unmarshaling: %v\n", err))
+
 			continue
 		}
 		conversations = append(conversations, convo)

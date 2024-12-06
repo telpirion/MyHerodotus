@@ -64,6 +64,8 @@ def main():
             ("gemini", "gemini_1_5_flash_001"),
             ("gemini-tuned", "tuned_gemini"),
             ("gemma", "gemma"),
+            ("agent-assisted", "agent-assisted"),
+            ("embeddings-assisted", "embeddings-assisted")
         ]
         for m in models:
             model_id, model_name = m

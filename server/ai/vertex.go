@@ -18,6 +18,7 @@ import (
 	"google.golang.org/api/option"
 	"google.golang.org/protobuf/types/known/structpb"
 
+	db "github.com/telpirion/MyHerodotus/databases"
 	"github.com/telpirion/MyHerodotus/generated"
 )
 
@@ -28,7 +29,9 @@ const (
 	GemmaTemplate                = "templates/gemma.2024.10.25.tmpl"
 	GeminiModel                  = "gemini-1.5-flash-001"
 	HistoryTemplate              = "templates/conversation_history.tmpl"
+	EmbeddingModelName           = "text-embedding-005"
 	MaxGemmaTokens         int32 = 2048
+	location                     = "us-west1"
 )
 
 var (
@@ -81,12 +84,14 @@ func Predict(query, modality, projectID string) (response string, templateName s
 		response, err = textPredictGemini(query, projectID, GeminiTuned)
 	case AgentAssisted:
 		response, err = textPredictWithReddit(query, projectID)
+	case EmbeddingsAssisted:
+		response, err = textPredictWithEmbeddings(query, projectID)
 	default:
 		response, err = textPredictGemini(query, projectID, Gemini)
 	}
 
 	if err != nil {
-		return "", "", nil
+		return "", "", err
 	}
 
 	cachedContext += fmt.Sprintf("### Human: %s\n### Assistant: %s\n", query, response)
@@ -95,7 +100,6 @@ func Predict(query, modality, projectID string) (response string, templateName s
 
 // GetTokenCount uses the Gemini tokenizer to count the tokens in some text.
 func GetTokenCount(text, projectID string) (int32, error) {
-	location := "us-west1"
 	ctx := context.Background()
 	client, err := genai.NewClient(ctx, projectID, location)
 	if err != nil {
@@ -135,7 +139,6 @@ func StoreConversationContext(conversationHistory []generated.ConversationBit, p
 	}
 
 	ctx := context.Background()
-	location := "us-west1"
 	client, err := genai.NewClient(ctx, projectID, location)
 	if err != nil {
 		return "", fmt.Errorf("unable to create client: %w", err)
@@ -208,7 +211,6 @@ func createPrompt(message, templateName, history string) (string, error) {
 // textPredictGemma2 generates text using a Gemma2 hosted model
 func textPredictGemma(message, projectID string) (string, error) {
 	ctx := context.Background()
-	location := "us-west1"
 	endpointID := os.Getenv("ENDPOINT_ID")
 	gemma2Endpoint := fmt.Sprintf("projects/%s/locations/%s/endpoints/%s", projectID, location, endpointID)
 
@@ -265,8 +267,6 @@ func textPredictGemma(message, projectID string) (string, error) {
 // textPredictGemini generates text using a Gemini 1.5 Flash model
 func textPredictGemini(message, projectID string, modality Modality) (string, error) {
 	ctx := context.Background()
-	location := "us-west1"
-
 	client, err := genai.NewClient(ctx, projectID, location)
 	if err != nil {
 		return "", err
@@ -296,7 +296,7 @@ func textPredictGemini(message, projectID string, modality Modality) (string, er
 
 	candidate, err := getCandidate(resp)
 	if err != nil {
-		return "I'm not sure how to answer that. Would you please repeat the question?", nil
+		return "", nil
 	}
 	return extractAnswer(candidate), nil
 }
@@ -396,4 +396,99 @@ func textPredictWithReddit(query, projectID string) (string, error) {
 
 	output := string(res.Candidates[0].Content.Parts[0].(genai.Text))
 	return output, nil
+}
+
+func textPredictWithEmbeddings(query, projectID string) (string, error) {
+
+	queryEmbed, err := getQueryTextEmbedding(query, projectID)
+	if err != nil {
+		return "", err
+	}
+
+	// Get context from embeddings
+	embeddingContext, err := db.GetEmbedding(queryEmbed, projectID)
+	if err != nil {
+		return "", err
+	}
+
+	ctx := context.Background()
+	client, err := genai.NewClient(ctx, projectID, location)
+	if err != nil {
+		return "", err
+	}
+	defer client.Close()
+
+	llm := client.GenerativeModel(GeminiModel)
+
+	createPrompt(query, GeminiTemplate, embeddingContext)
+
+	resp, err := llm.GenerateContent(ctx, genai.Text(query))
+	if err != nil {
+		fmt.Println(err.Error())
+		return "", err
+	}
+
+	candidate, err := getCandidate(resp)
+	if err != nil {
+		return "", err
+	}
+	return extractAnswer(candidate), nil
+}
+
+func getQueryTextEmbedding(query, projectID string) ([]float32, error) {
+
+	var embedding []float32
+	ctx := context.Background()
+
+	apiEndpoint := fmt.Sprintf("%s-aiplatform.googleapis.com:443", location)
+	dimensionality := 128
+	texts := []string{query}
+
+	client, err := aiplatform.NewPredictionClient(ctx, option.WithEndpoint(apiEndpoint))
+	if err != nil {
+		return embedding, err
+	}
+	defer client.Close()
+
+	endpoint := fmt.Sprintf("projects/%s/locations/%s/publishers/google/models/%s",
+		projectID, location, EmbeddingModelName)
+	instances := make([]*structpb.Value, len(texts))
+	for i, text := range texts {
+		instances[i] = structpb.NewStructValue(&structpb.Struct{
+			Fields: map[string]*structpb.Value{
+				"content":   structpb.NewStringValue(text),
+				"task_type": structpb.NewStringValue("RETRIEVAL_QUERY"),
+			},
+		})
+	}
+
+	params := structpb.NewStructValue(&structpb.Struct{
+		Fields: map[string]*structpb.Value{
+			"outputDimensionality": structpb.NewNumberValue(float64(dimensionality)),
+		},
+	})
+
+	req := &aiplatformpb.PredictRequest{
+		Endpoint:   endpoint,
+		Instances:  instances,
+		Parameters: params,
+	}
+	resp, err := client.Predict(ctx, req)
+	if err != nil {
+		return embedding, err
+	}
+	embeddings := make([][]float32, len(resp.Predictions))
+	for i, prediction := range resp.Predictions {
+		values := prediction.GetStructValue().Fields["embeddings"].GetStructValue().Fields["values"].GetListValue().Values
+		embeddings[i] = make([]float32, len(values))
+		for j, value := range values {
+			embeddings[i][j] = float32(value.GetNumberValue())
+		}
+	}
+
+	if len(embeddings) == 0 {
+		return embedding, fmt.Errorf("vertex: text embeddings: no embeddings created")
+	}
+
+	return embeddings[0], nil
 }
