@@ -1,3 +1,6 @@
 langchain-google-firestore
 google-cloud-firestore
 langchain-text-splitters
+kagglehub
+pandas
+pypdf==4.3.1
