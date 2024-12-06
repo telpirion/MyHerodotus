@@ -9,6 +9,7 @@ import (
 	"time"
 
 	ai "github.com/telpirion/MyHerodotus/ai"
+	db "github.com/telpirion/MyHerodotus/databases"
 	"github.com/telpirion/MyHerodotus/generated"
 
 	"github.com/gin-gonic/gin"
@@ -94,7 +95,7 @@ func startConversation(c *gin.Context) {
 	LogInfo("Start conversation request received")
 
 	// create a new conversation context
-	convoHistory, err := getConversation(encryptedEmail, projectID)
+	convoHistory, err := db.GetConversation(encryptedEmail, projectID)
 	if err != nil {
 		LogError(fmt.Sprintf("couldn't get conversation history: %v\n", err))
 	}
@@ -150,7 +151,10 @@ func respondToUser(c *gin.Context) {
 	botResponse, promptTemplateName, err = ai.Predict(userMsg.Message, userMsg.Model, projectID)
 	if err != nil {
 		LogError(fmt.Sprintf("bad response from %s: %v\n", userMsg.Model, err))
-		botResponse = "Oops! I had troubles understanding that ..."
+		c.JSON(http.StatusOK, gin.H{
+			"Message": "Oops! I had troubles understanding that ...",
+		})
+		return
 	}
 
 	// Store data in Firestore
@@ -208,7 +212,7 @@ func updateDatabase(projectID, userMessage, modelName, promptTemplateName, botRe
 	// Store the conversation in Firestore and update the cachedContext
 	// This is dual-entry accounting so that we don't have to query Firestore
 	// every time to update the cached context
-	documentID, err := saveConversation(*convo, encryptedEmail, projectID)
+	documentID, err := db.SaveConversation(*convo, encryptedEmail, projectID)
 	if err != nil {
 		return "", fmt.Errorf("couldn't save conversation: %v", err)
 	}
@@ -251,7 +255,7 @@ func rateResponse(c *gin.Context) {
 		return
 	}
 
-	err = updateConversation(userRating.DocumentID, encryptedEmail, userRating.UserRating, projectID)
+	err = db.UpdateConversation(userRating.DocumentID, encryptedEmail, userRating.UserRating, projectID)
 	if err != nil {
 		LogError(err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{

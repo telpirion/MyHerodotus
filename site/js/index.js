@@ -69,7 +69,11 @@ function processRating(e) {
 }
 
 function processForm(e) {
-    //e.preventDefault();
+    // Collect data and return early if there is no message from user.
+    const message = document.getElementById("userMsg").value;
+    if (message === "") {
+        return;
+    }
 
     // Emit 'msg' event for bot progress bar
     const event = new Event("msg");
@@ -82,12 +86,6 @@ function processForm(e) {
     // If the user hasn't signed in, redirect them to the sign-in page.
     if (!user) {
         window.location = `/?status=unauthorized`;
-    }
-
-    // Collect data
-    const message = document.getElementById("userMsg").value;
-    if (message === "") {
-        return;
     }
 
     const selection = document.getElementById("modelSelect");

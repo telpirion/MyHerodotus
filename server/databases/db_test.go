@@ -1,4 +1,4 @@
-package main
+package databases
 
 import (
 	"context"
@@ -67,7 +67,7 @@ func TestSaveConversation(t *testing.T) {
 		BotResponse: "This is a bot response",
 		Created:     time.Now().Unix(),
 	}
-	id, err := saveConversation(*convo, email, _projectID)
+	id, err := SaveConversation(*convo, email, _projectID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -81,7 +81,7 @@ func TestSaveConversation(t *testing.T) {
 		BotResponse: "This is another fake bot response",
 		Created:     time.Now().Unix(),
 	}
-	nextID, err := saveConversation(*nextConvo, email, _projectID)
+	nextID, err := SaveConversation(*nextConvo, email, _projectID)
 	if err != nil {
 		t.Fatalf("Error on adding next conversation: %v\n\n", err)
 	}
@@ -91,7 +91,7 @@ func TestSaveConversation(t *testing.T) {
 }
 
 func TestGetConversation(t *testing.T) {
-	conversations, err := getConversation(email2, projectID)
+	conversations, err := GetConversation(email2, _projectID)
 	if err != nil {
 		t.Fatal(err)
 	}
