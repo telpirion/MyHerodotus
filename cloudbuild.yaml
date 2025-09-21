@@ -1,0 +1,20 @@
+
+# Builds the Kleos Sample Evaluation service into a container image.
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  script: |
+    set -x
+    docker build -t ${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_IMAGE}:${_VERSION} .
+
+images:
+- ${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_IMAGE}:${_VERSION}
+
+substitutions:
+  _VERSION: v0.7.1
+  _IMAGE: base-image
+  _LOCATION: us-west1
+  _REPO: my-herodotus
+
+
+options:
+  automapSubstitutions: true
