@@ -40,7 +40,7 @@ func getRedditPosts(location string) (string, error) {
 				continue
 			}
 
-			response += fmt.Sprintf("Title: %s, Post: %s, Top Comment:\n",
+			response += fmt.Sprintf("Title: %s, Post: %s, Top Comment: %v\n",
 				post.Title, post.Body, postAndComments.Comments[0])
 		}
 	}

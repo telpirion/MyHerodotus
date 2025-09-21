@@ -11,3 +11,5 @@ appInit.js
 
 # App data passed to reddit-tool
 services/reddit-tool/secret.py
+
+.env

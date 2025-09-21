@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/joho/godotenv"
 	ai "github.com/telpirion/MyHerodotus/ai"
 	db "github.com/telpirion/MyHerodotus/databases"
 	"github.com/telpirion/MyHerodotus/generated"
@@ -43,6 +44,11 @@ type UserMessage struct {
 }
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	defer func() {
 		if r := recover(); r != nil {
 			LogError(fmt.Sprintf("Error: %v", r))

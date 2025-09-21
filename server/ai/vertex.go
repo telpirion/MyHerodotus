@@ -27,7 +27,7 @@ const (
 	MinimumConversationNum       = 400
 	GeminiTemplate               = "templates/gemini.2024.10.25.tmpl"
 	GemmaTemplate                = "templates/gemma.2024.10.25.tmpl"
-	GeminiModel                  = "gemini-1.5-flash-001"
+	GeminiModel                  = "gemini-2.5-flash"
 	HistoryTemplate              = "templates/conversation_history.tmpl"
 	EmbeddingModelName           = "text-embedding-005"
 	MaxGemmaTokens         int32 = 2048

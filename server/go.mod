@@ -18,6 +18,7 @@ require (
 require (
 	cloud.google.com/go/longrunning v0.6.1 // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
+	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/vartanbeno/go-reddit/v2 v2.0.1 // indirect
 )
 
