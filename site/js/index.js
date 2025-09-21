@@ -64,7 +64,6 @@ function processRating(e) {
     })
     .catch(e => {
         console.log(`error: ${e}`);
-        alert(e);
     });
 }
 
@@ -119,7 +118,8 @@ function processForm(e) {
     })
     .catch(e => {
         console.log(`error: ${e}`);
-        alert(e);
+        const botMessage = document.querySelector(".message-actual")
+        botMessage.innerHTML = `Whoops! Something went wrong. Error: ${e}`;
     });
     return true;
 }
